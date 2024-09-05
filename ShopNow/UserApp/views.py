@@ -30,6 +30,8 @@ from UserApp.customPermissions import CustomizeAPIPermissions
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
+from Cart.models import cartModel
+
 
 @csrf_exempt
 @api_view(['POST'])
@@ -59,10 +61,22 @@ def loginUser(request):
             serialized=loginSerializer(data=request.data)
             print(request.data)
             if serialized.is_valid():
+               
                 print(serialized.data.get('username'),serialized.validated_data.get('password'))
                 user=authenticate(request,username=serialized.validated_data.get('username'),password=serialized.validated_data.get('password'))
-                print(user)
+                print(user,serialized.data.get('username'))
+                loged_user=Webuser.objects.get(username=serialized.data.get('username'))
+                print(loged_user)
                 if user is not None:
+                    try:
+                        cartModel.objects.get(user_of_cart=loged_user)
+                        pass
+                    except:
+                        try:
+                            print("not coming")
+                            cartModel.objects.create(user_of_cart=loged_user)
+                        except:
+                            return Response("cart is causing some issue")
                     refresh_and_access_token=RefreshToken.for_user(user)
                     access_token = str(refresh_and_access_token.access_token)
                     refresh_token = str(refresh_and_access_token)
@@ -71,7 +85,10 @@ def loginUser(request):
                                 'access': access_token,
                                 'refresh':refresh_token,
                             }
-                    return Response(response_to_be_send)         
+                    return Response(response_to_be_send)
+                else:
+                    return Response("invalid credentials")
+
             else: 
                 return Response(serialized.errors)      
              

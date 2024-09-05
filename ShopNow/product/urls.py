@@ -11,8 +11,6 @@ from product.views import *
 
 
 urlpatterns = [
-   
-    
     # Path to the API URLs
     path('product/',productView.as_view(),name='product'),    
     path('product/<int:pk>',productView.as_view(),name='product'),   
