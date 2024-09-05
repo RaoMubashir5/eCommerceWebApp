@@ -23,5 +23,5 @@ class cartModel(models.Model):
     
 
     def __str__(self):
-        return f"Cart:{self.id}:...:user:{self.user_of_cart} ."
+        return f"Cart:{self.id}:{self.user_of_cart} ."
 
