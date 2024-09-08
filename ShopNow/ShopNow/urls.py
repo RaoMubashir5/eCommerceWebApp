@@ -27,6 +27,7 @@ from product.views import *
 from django.conf import settings
 from django.conf.urls.static import static
 from Cart.views import *
+from checkout.views import *
 urlpatterns = [
     # Path to the admin page
     path('admin/', admin.site.urls), #it should be either in the specific app urls or not .
@@ -35,6 +36,7 @@ urlpatterns = [
     path('api/', include('UserApp.urls')),  # Assuming you have `api/urls.py` for your API routes
     path('api/', include('product.urls')),
      path('api/', include('Cart.urls')),
+     path('api/',include('checkout.urls')),
 
     path('mub/',include('rest_framework.urls')),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
