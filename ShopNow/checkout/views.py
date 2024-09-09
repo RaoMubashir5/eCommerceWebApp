@@ -13,6 +13,8 @@ from .serializer import checkoutSerializer
 from .customPermissions import CustomizeAPIPermissions
 
 from product.serializer import productSerializer
+from Cart.models import addToCart
+from Cart.serializer import AddToCartSerializer
 
 
 # Create your views here.0
@@ -34,12 +36,25 @@ class CheckoutView(APIView):
             if serialized.is_valid():
                 serialized.save()
                 cart_obj=requesting_user.Cart_with_this_user
-                all_products_cart=cart_obj.cart_product.all()
-                serialized_products=productSerializer(all_products_cart,many=True)
-                print(all_products_cart)
+            
+                # using reverse relation we find the all addtocart entries with the cart of that user
+                cart_against_this_user=cart_obj.products_inThisCart.all()
+                serialized_products=AddToCartSerializer(cart_against_this_user,many=True)
+                print(cart_against_this_user)
+
+ 
+                cart_sum=0
+                for cart_prod in cart_against_this_user:
+                    print(cart_prod,cart_prod.cart_product,cart_prod.product_quantity)
+                    cart_sum=cart_sum + (cart_prod.cart_product.price*cart_prod.product_quantity)
+
+                print(cart_sum)
+                #cart_sum= sum(prod.price*prod.add_product for prod in all_products_cart)
                 response_to_beSend={'UserInfo':serialized.data,
                                     'cart_items':serialized_products.data,
-                                    'button':"Proceed to Place order",}
+                                    'Cart_sum':cart_sum,
+                                    'button':"Proceed to Place order",
+                                    }
                 return Response(response_to_beSend,status=status.HTTP_201_CREATED)
             else:
                 return Response(serialized.errors)
