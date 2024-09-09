@@ -21,6 +21,7 @@ class cartModel(models.Model):
     user_of_cart=models.OneToOneField(Webuser,on_delete=models.CASCADE,related_name="Cart_with_this_user")
     cart_product=models.ManyToManyField(product,through=addToCart)
     
+    
 
     def __str__(self):
         return f"Cart:{self.id}:{self.user_of_cart} ."
