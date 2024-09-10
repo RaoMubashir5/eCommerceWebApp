@@ -46,11 +46,11 @@ class WebUserSerializer(serializers.ModelSerializer):
     # def update(self,instance,validated_data):
       
 
-    def validate_username(self,value):
-            if  value.lower():
-                return value.capitalize() 
-            else:
-                 return value.capitalize() 
+    # def validate_username(self,value):
+    #         if  value.lower():
+    #             return value.capitalize() 
+    #         else:
+    #              return value.capitalize() 
              
 
             # .............................validate(self,data).................................

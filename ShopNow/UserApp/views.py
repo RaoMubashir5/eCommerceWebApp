@@ -36,7 +36,7 @@ from django.views import View
 import requests
 
 
-@csrf_exempt
+
 @api_view(['POST'])
 def registerUser(request):
     if request.method == 'POST':
@@ -46,17 +46,17 @@ def registerUser(request):
                 serialized.save()
                 # print(f"""Username: {serialized.data.get('username')}, Email: {serialized.data.get('useremail')},
                 #     Password: {serialized.data.get('password')}, Confirm Password: {serialized.data.get('confirm_password')}""")
-                return Response(serialized.data)
+                return Response(serialized.data,status=status.HTTP_201_CREATED)
             else:
-                return Response("your data is invalid")
+                return Response(f"your data is invalid,{serialized.errors}",status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response("Data is not inluded in request.")
+            return Response("Data is not inluded in request.",status=status.HTTP_400_BAD_REQUEST)
     else:
-        return Response("Invalid method")
+        return Response("Invalid method",status=status.HTTP_400_BAD_REQUEST)
 
 
        
-@csrf_exempt
+
 @api_view(['POST'])
 def loginUser(request):
     if request.method=='POST':
@@ -65,10 +65,12 @@ def loginUser(request):
             print(request.data)
             if serialized.is_valid():
                
-                print(serialized.data.get('username'),serialized.validated_data.get('password'))
+                # print(serialized.data.get('username'),serialized.validated_data.get('password'))
                 user=authenticate(request,username=serialized.validated_data.get('username'),password=serialized.validated_data.get('password'))
-                print(user,serialized.data.get('username'))
+                print(user.id,serialized.data.get('username'))
+                logged_user_id=user.id
                 loged_user=Webuser.objects.get(username=serialized.data.get('username'))
+               
                 print(loged_user)
                 if user is not None:
                     try:
@@ -87,13 +89,14 @@ def loginUser(request):
                                 'username':serialized.validated_data.get('username'),
                                 'access': access_token,
                                 'refresh':refresh_token,
+                                'logged_user_id':logged_user_id,
                             }
-                    return Response(response_to_be_send)
+                    return Response(response_to_be_send,status=status.HTTP_200_OK)
                 else:
-                    return Response("invalid credentials")
+                    return Response("invalid credentials",status=status.HTTP_404_NOT_FOUND)
 
             else: 
-                return Response(serialized.errors)      
+                return Response(serialized.errors,status=status.HTTP_400_BAD_REQUEST)      
              
 
 
@@ -156,27 +159,37 @@ class get_register_users(APIView):
 
 
 #These are for frontEnd.
-class UserFrontEndClass(View):
+class UserAdminFrontend(View):
 
     def get(self,request,*args,**kwargs):
-        pk=kwargs.get('pk')
-        if pk is None:
-            response_from_api=requests.get("http://127.0.0.1:8000/api/user/")
-            if response_from_api.status_code==200:
-                response_to_pass=response_from_api.json()
+        token=request.session.get('access_token')
+        pk=request.session.get('user_id')
+        if token:
+            headers={'Authorization': f"Bearer {token}"}
+            #decoding the token to extract the userr id :
+            #decode_token=JWT
 
-                return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
-            else:
-                print("Status code: ",response_from_api.status_code)
-                response_to_pass={}
-                if response_from_api.status_code==401:
-                    massage="ALERT: You are unauthorized to access this!!!"
-                else:
-                    massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
-                return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})
-        else:
-            print(pk,request.user.is_superuser)
-            response_from_api=requests.get(f"http://127.0.0.1:8000/api/user/{pk}")
+            print(headers)
+        #   pk=kwargs.get('pk')
+        #     if pk is None:
+               
+        #         response_from_api=requests.get("http://127.0.0.1:8000/api/user/",headers=headers)
+        #         if response_from_api.status_code==200:
+        #             response_to_pass=response_from_api.json()
+ 
+        #             return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
+        #         else:
+        #             print("Status code: ",response_from_api.status_code)
+        #             response_to_pass={}
+        #             if response_from_api.status_code==401:
+        #                 massage="ALERT: You are unauthorized to access this!!!"
+        #             else:
+        #                 massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
+        #             return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})
+        #     else:
+        #         print(pk,request.user.is_superuser)
+            print("...........",pk)
+            response_from_api=requests.get(f"http://127.0.0.1:8000/api/user/",headers=headers)
             if response_from_api.status_code==200:
                 response_to_pass=response_from_api.json()
                 return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
@@ -187,8 +200,66 @@ class UserFrontEndClass(View):
                     massage="ALERT: You are unauthorized to access this!!!"
                 else:
                     massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
-                return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})
-         
+                return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})            
+        else:
+            return HttpResponse("There is No token",status= status.HTTP_401_UNAUTHORIZED)
+def home(request):
+    if request.session.get('access_token'):
+        print(request.session.get('user_id'),request.session.get('access_token'))
+        return render(request,'home.html',{'user_id':request.session.get('user_id')})
+
+def login_page(request):
+    if request.method=='GET':
+        return render(request,'loginPage.html')
+    if request.method=='POST':
+        form_data=request.POST
+        print(form_data)
+        form_data_dict={
+                       'username':form_data.get('username'),
+                       'password':form_data.get('password'),}
+        response_from_api=requests.post("http://127.0.0.1:8000/api/login/",data=form_data_dict)
+        if response_from_api.status_code==200:
+            response_to_pass=response_from_api.json()
+            request.session['access_token']=response_to_pass.get('access')
+            request.session['user_id']=response_to_pass.get('logged_user_id')
+            print(request.session['access_token'])
+            print("......",request.session['user_id'])
+            return redirect("/api/home/")
+        else:
+            response_to_pass=response_from_api.json()
+            print(response_to_pass)
+            return render(request,'login_user.html',{'massage':response_to_pass})
+
+
+
+def registerFrontend(request):
+       
+            
+            if request.method=='GET':
+                try:
+                    print("Token aya hoa ha:",request.session.get('access_token'))
+                    return render(request,'registerUser.html',)
+                except:
+                    return render(request,'registerUser.html',)
+            if request.method=='POST':
+                form_data=request.POST
+                print(form_data)
+                form_data_dict={
+                'username':form_data.get('username'),
+                'email':form_data.get('email'),
+                'password':form_data.get('password'),
+                'confirm_password':form_data.get('confirm_password'),
+                }
+                response_from_api=requests.post("http://127.0.0.1:8000/api/register/",data=form_data_dict)
+                if response_from_api.status_code==201:
+                    response_to_pass=response_from_api.json()
+                    
+                    return render(request,'registerUser.html',{'massage':"User is Registered Successfully!!"})
+                else:
+                    response_to_pass=response_from_api.json()
+                    print(response_to_pass)
+                    return render(request,'registerUser.html',{'massage':response_to_pass})
+       
 
             
 

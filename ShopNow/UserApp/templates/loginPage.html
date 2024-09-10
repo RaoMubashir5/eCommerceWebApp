@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login</title>
+</head>
+<body>
+   
+    <form method="post">
+        {% csrf_token %}
+        <label for="uname">Please Enter UserName:</label>
+        <input type="text" name="username" required placeholder="cureMd" id="uname"><hr>
+        <label for="upass">Please Enter Password:</label>
+        <input type="password" name="password" required  id="upass"><hr>
+        <button type="submit">Login</button><hr>
+    </form>
+    {{massage}}
+
+</body>
+</html>

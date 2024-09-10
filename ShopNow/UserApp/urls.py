@@ -25,6 +25,9 @@ urlpatterns=[
     path('user/<int:pk>',get_register_users.as_view(),name='user'),    
 
     #Front end paths
-    path('all_users/',UserFrontEndClass.as_view(),name='all_users'),    
-    path('single_user/<int:pk>',UserFrontEndClass.as_view(),name='single_user'),    
+    path('home/',home,name='home'),  
+    path('all_users/',UserAdminFrontend.as_view(),name='all_users'),    
+    path('single_user/<int:pk>',UserAdminFrontend.as_view(),name='single_user'),
+    path('register_new/',registerFrontend,name='register_new'),
+    path('login_user/',login_page,name='login_user'),     
 ]

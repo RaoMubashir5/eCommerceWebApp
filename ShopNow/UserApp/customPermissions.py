@@ -6,9 +6,12 @@ class CustomizeAPIPermissions(BasePermission):
                # Allow POST for authenticated users to create new records
 
         print("here is the check start",request.user.is_superuser,request.auth,request.user,request.method,request.user.is_authenticated)
-        if request.method in ['POST','GET']:
+        if request.method in ['GET']:
             print("first is the check start",request.method)
-            return True
+            return request.user.is_superuser
+        # if request.method in ['POST']:
+        #     print("first is the check start",request.method)
+        #     return request.user.is_superuser
         
         # Allow PUT, PATCH, DELETE if user is authenticated
         if request.method in ['PUT', 'PATCH', 'DELETE','OPTIONS']:
