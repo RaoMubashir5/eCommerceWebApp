@@ -64,18 +64,20 @@ def loginUser(request):
             serialized=loginSerializer(data=request.data)
             print(request.data)
             if serialized.is_valid():
-               
+                print("It is ok")
                 # print(serialized.data.get('username'),serialized.validated_data.get('password'))
                 user=authenticate(request,username=serialized.validated_data.get('username'),password=serialized.validated_data.get('password'))
-                print(user.id,serialized.data.get('username'))
-                logged_user_id=user.id
-                loged_user=Webuser.objects.get(username=serialized.data.get('username'))
+                print("............555,,,,,,......",user)
                
-                print(loged_user)
+               
+            
                 if user is not None:
+                    loged_user=Webuser.objects.get(username=serialized.data.get('username'))
+                    print(loged_user)
+                    print(user.id,serialized.data.get('username'))
+                    logged_user_id=user.id
                     try:
                         cartModel.objects.get(user_of_cart=loged_user)
-                        pass
                     except:
                         try:
                             print("not coming")
@@ -94,10 +96,10 @@ def loginUser(request):
                     return Response(response_to_be_send,status=status.HTTP_200_OK)
                 else:
                     return Response("invalid credentials",status=status.HTTP_404_NOT_FOUND)
-
             else: 
                 return Response(serialized.errors,status=status.HTTP_400_BAD_REQUEST)      
-             
+        else: 
+            return Response("Request is empty ",status=status.HTTP_400_BAD_REQUEST)    
 
 
 class get_register_users(APIView):
@@ -170,29 +172,31 @@ class UserAdminFrontend(View):
             #decode_token=JWT
 
             print(headers)
-        #   pk=kwargs.get('pk')
-        #     if pk is None:
+          
+            if pk is None:
                
-        #         response_from_api=requests.get("http://127.0.0.1:8000/api/user/",headers=headers)
-        #         if response_from_api.status_code==200:
-        #             response_to_pass=response_from_api.json()
+                response_from_api=requests.get("http://127.0.0.1:8000/api/user/",headers=headers)
+                if response_from_api.status_code==200:
+                    response_to_pass=response_from_api.json()
  
-        #             return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
-        #         else:
-        #             print("Status code: ",response_from_api.status_code)
-        #             response_to_pass={}
-        #             if response_from_api.status_code==401:
-        #                 massage="ALERT: You are unauthorized to access this!!!"
-        #             else:
-        #                 massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
-        #             return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})
-        #     else:
-        #         print(pk,request.user.is_superuser)
+                    return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
+                else:
+                    print("Status code: ",response_from_api.status_code)
+                    response_to_pass={}
+                    if response_from_api.status_code==401:
+                        massage="ALERT: You are unauthorized to access this!!!"
+                    else:
+                        massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
+                    return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage,'single':False})
+            else:
+                print(pk,request.user.is_superuser)
             print("...........",pk)
-            response_from_api=requests.get(f"http://127.0.0.1:8000/api/user/",headers=headers)
+            response_from_api=requests.get(f"http://127.0.0.1:8000/api/user/{pk}",headers=headers)
+            print(response_from_api)
             if response_from_api.status_code==200:
                 response_to_pass=response_from_api.json()
-                return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
+                print(response_to_pass)
+                return render(request,'users.html',{'response':response_to_pass,'data_reteived':True,'single':True})
             else:
                 print("Detail Status code: ",response_from_api.status_code)
                 response_to_pass={}
@@ -219,16 +223,22 @@ def login_page(request):
                        'password':form_data.get('password'),}
         response_from_api=requests.post("http://127.0.0.1:8000/api/login/",data=form_data_dict)
         if response_from_api.status_code==200:
-            response_to_pass=response_from_api.json()
+            response_to_pass = response_from_api.json()
+            
             request.session['access_token']=response_to_pass.get('access')
             request.session['user_id']=response_to_pass.get('logged_user_id')
             print(request.session['access_token'])
             print("......",request.session['user_id'])
             return redirect("/api/home/")
         else:
-            response_to_pass=response_from_api.json()
-            print(response_to_pass)
-            return render(request,'login_user.html',{'massage':response_to_pass})
+            try:
+                response_to_pass = response_from_api.json()
+                return render(request,'loginPage.html',{'massage':response_to_pass,'error':True})
+                
+            except:
+                return Response({'error': 'Invalid JSON response'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            
 
 
 

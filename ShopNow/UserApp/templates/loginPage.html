@@ -15,7 +15,9 @@
         <input type="password" name="password" required  id="upass"><hr>
         <button type="submit">Login</button><hr>
     </form>
-    {{massage}}
+    {% if error is True %}
+    <p>Error Massage:{{massage}}</p>
+    {% endif %}
 
 </body>
 </html>
