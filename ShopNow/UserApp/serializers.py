@@ -18,7 +18,7 @@ class WebUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=Webuser
-        fields=['username','email','password','confirm_password']
+        fields=['id','username','email','password','confirm_password']
     
     def create(self,validated_data):
         username=validated_data['username']

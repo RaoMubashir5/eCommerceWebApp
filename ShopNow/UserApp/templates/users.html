@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Users</title>
+</head>
+<body>
+    <hr>
+    {% if  data_reteived is False %}
+    <p>{{massage}}</p>
+    <hr>
+    {% else %}
+    <table>
+        <tr>
+            <th>ID: </th>
+            <th>username: </th>
+            <th>Email: </th>
+            <td>
+        </tr>
+        
+        {% for user in response %}
+        <tr>
+            <td>{{user.id}}</td>
+            <td>{{user.username}}</td>
+            <td>{{user.email}}</td>
+           
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+</body>
+</html>

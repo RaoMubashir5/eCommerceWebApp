@@ -8,7 +8,7 @@ class CustomizeAPIPermissions(BasePermission):
         print("here is the check start",request.user.is_superuser,request.auth,request.user,request.method,request.user.is_authenticated)
         if request.method in ['POST','GET']:
             print("first is the check start",request.method)
-            return request.user.is_authenticated and request.auth
+            return True
         
         # Allow PUT, PATCH, DELETE if user is authenticated
         if request.method in ['PUT', 'PATCH', 'DELETE','OPTIONS']:

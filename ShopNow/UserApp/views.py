@@ -32,6 +32,9 @@ from django.db.utils import IntegrityError
 
 from Cart.models import cartModel
 
+from django.views import View
+import requests
+
 
 @csrf_exempt
 @api_view(['POST'])
@@ -103,15 +106,19 @@ class get_register_users(APIView):
             user=Webuser.objects.all()
             serialized=WebUserSerializer(user,many=True)
             print("This is user: ",request.user)
-            return Response({'user':serialized.data})
-            
-        
+            return Response(serialized.data)
         else:
-            instance=Webuser.objects.get(id=pk)
+            print("kuvh")
+            try:
+                instance=Webuser.objects.get(id=pk)
+            except:
+                return Response("User Not exists ",status=status.HTTP_404_NOT_FOUND)
+            print("......",instance,"........")
             self.check_object_permissions(request,instance)
-            user=Webuser.objects.get(id=pk)
-            serialized=WebUserSerializer(user,many=False)
-            return Response({'user':serialized.data})
+            serialized=WebUserSerializer(instance)
+            return Response(serialized.data)
+           
+           
     def put(self,request,pk=None):
         print(pk)
         if pk is not None:
@@ -147,5 +154,43 @@ class get_register_users(APIView):
                 return Response(status=status.HTTP_200_OK)
             return Response("You are not adding the pk")
 
+
+#These are for frontEnd.
+class UserFrontEndClass(View):
+
+    def get(self,request,*args,**kwargs):
+        pk=kwargs.get('pk')
+        if pk is None:
+            response_from_api=requests.get("http://127.0.0.1:8000/api/user/")
+            if response_from_api.status_code==200:
+                response_to_pass=response_from_api.json()
+
+                return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
+            else:
+                print("Status code: ",response_from_api.status_code)
+                response_to_pass={}
+                if response_from_api.status_code==401:
+                    massage="ALERT: You are unauthorized to access this!!!"
+                else:
+                    massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
+                return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})
+        else:
+            print(pk,request.user.is_superuser)
+            response_from_api=requests.get(f"http://127.0.0.1:8000/api/user/{pk}")
+            if response_from_api.status_code==200:
+                response_to_pass=response_from_api.json()
+                return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
+            else:
+                print("Detail Status code: ",response_from_api.status_code)
+                response_to_pass={}
+                if response_from_api.status_code==401:
+                    massage="ALERT: You are unauthorized to access this!!!"
+                else:
+                    massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
+                return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})
+         
+
+            
+
+
         
-    

@@ -23,4 +23,8 @@ urlpatterns=[
     path('login/',loginUser,name='login'),
     path('user/',get_register_users.as_view(),name='user'),
     path('user/<int:pk>',get_register_users.as_view(),name='user'),    
+
+    #Front end paths
+    path('all_users/',UserFrontEndClass.as_view(),name='all_users'),    
+    path('single_user/<int:pk>',UserFrontEndClass.as_view(),name='single_user'),    
 ]
