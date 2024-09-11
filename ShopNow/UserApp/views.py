@@ -69,7 +69,6 @@ def loginUser(request):
                 user=authenticate(request,username=serialized.validated_data.get('username'),password=serialized.validated_data.get('password'))
                 print("............555,,,,,,......",user)
                
-               
             
                 if user is not None:
                     loged_user=Webuser.objects.get(username=serialized.data.get('username'))
@@ -165,16 +164,17 @@ class UserAdminFrontend(View):
 
     def get(self,request,*args,**kwargs):
         token=request.session.get('access_token')
-        pk=request.session.get('user_id')
+        pk =kwargs.get('pk')
+        print(pk)
         if token:
             headers={'Authorization': f"Bearer {token}"}
             #decoding the token to extract the userr id :
             #decode_token=JWT
 
-            print(headers)
+            print("............",headers,pk)
           
             if pk is None:
-               
+                
                 response_from_api=requests.get("http://127.0.0.1:8000/api/user/",headers=headers)
                 if response_from_api.status_code==200:
                     response_to_pass=response_from_api.json()
@@ -211,6 +211,9 @@ def home(request):
     if request.session.get('access_token'):
         print(request.session.get('user_id'),request.session.get('access_token'))
         return render(request,'home.html',{'user_id':request.session.get('user_id')})
+    else:
+        return render(request,'home.html')
+
 
 def login_page(request):
     if request.method=='GET':

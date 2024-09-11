@@ -1,53 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registered Users</title>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Profile</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+<body style="height: 100%;">
     
-    <hr>
+ 
     {% if  data_reteived is False %}
-    <p>{{massage}}</p>
-    <hr>
-    {% else %}
-        {% if single is True %}
-        <table>
+    <header style="background-color: rgb(6, 139, 51); height: 7vh; font-weight: bolder; 
+                   display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+                {{ massage }} <!-- Assuming 'message' is what you meant -->
+                <button type="button" class="btn btn-danger" onclick="window.location.href='/api/home/'" style="margin-left: 5px;">Home</button>
+                <button type="button" class="btn btn-danger" onclick="window.location.href='/api/login_user/'">
+                Login First
+               </button>
+               </header>
 
-            <tr>
-                <th>ID: </th><br>
-                <th>username: </th><br>
-                <th>Email: </th><br>
-                <td>
-            </tr>
-            <tr>
+    {% else %}
+    
+        {% if single is True %}
+       <nav>
+        <button type="button" class="btn btn-warning" onclick="window.location.href='/api/home/'">Home</button>
+        <button type="button" class="btn btn-info" onclick="window.location.href='#'">Cart</button>
+       </nav>
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">ID :</th>
+                <th scope="col">username :</th>
+                <th scope="col">Email :</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
                 <td>{{response.id}}</td>
                 <td>{{response.username}}</td>
                 <td>{{response.email}}</td>
-            </tr>
+                <button type="button" class="btn btn-danger" onclick="window.location.href='/api/update/'">Update</button>
+                <button type="button" class="btn btn-warning" onclick="window.location.href='/api/delete/'">Delete</button>
+
+              </tr>
+            </tbody>
+          </table>
         
-        </table>
         {% else %}
-        <table>
-            <tr>
-                <th>ID: </th>
-                <th>username: </th>
-                <th>Email: </th>
-                <td>
-            </tr>
-            {% for user in response %}
-            <tr>
+        <header style="background-color: rgb(6, 139, 51);height: 7vh;font-weight: bolder;
+                       display: flex;justify-content: center;align-items: center;">Users Profiles</header>
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">ID :</th>
+                <th scope="col">username :</th>
+                <th scope="col">Email :</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for user in response %}
+              <tr>
                 <td>{{user.id}}</td>
                 <td>{{user.username}}</td>
                 <td>{{user.email}}</td>
-            
-            </tr>
-            {% endfor %}
-        
-        </table>
+                <button type="button" class="btn btn-danger" onclick="window.location.href='/api/update/'">Update</button>
+                <button type="button" class="btn btn-warning" onclick="window.location.href='/api/delete/'">Delete</button>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         {% endif %}
     {% endif %}
+    <footer style="background-color: rgb(18, 78, 2);height: 7vh;font-weight:bolder;position: fixed;bottom: 0;
+                  width: 100%;z-index: 1000; display: flex;justify-content: center;align-items: center;">ShopNow Axim</footer>
 
 </body>
 </html>

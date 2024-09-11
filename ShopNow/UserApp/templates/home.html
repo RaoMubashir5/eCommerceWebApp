@@ -1,18 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>home</title>
-</head>
-<body>
-    <nav style="background-color: rgb(12, 227, 156);height:10vh;align-items: center;">
+    <head>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         
-        <button type="button" onclick="window.location.href='/api/register_new/'" style="height: 7vh;">Register new User</button>
-        <button type="button" onclick="window.location.href='/api/login_user/'" style="height: 7vh;">Login</button>
-        <button type="button" onclick="window.location.href='/api/single_user/{{user_id}}'" style="height: 7vh;">User Profile</button>
+        <!-- Bootstrap JS (optional, for any Bootstrap components that require JS like modals) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <title>Home</title>
+      </head>
+      
+<body>
+ 
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Navbar</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <a class="nav-item nav-link active" href="/api/register_new/">Register<span class="sr-only">(current)</span></a>
+        <a class="nav-item nav-link" href="/api/login_user/">Login</a>
+        <a class="nav-item nav-link" href="/api/single_user/{{user_id}}">User Profile</a>
+        <a class="nav-item nav-link disabled" href="#">Admin</a>
+      </div>
+    </div>
+  </nav>
+    <footer style="background-color: rgb(18, 78, 2);height: 7vh;font-weight:bolder;position: fixed;bottom: 0;width: 100%;z-index: 1000;
+                    display: flex; justify-content: center;align-items: center;">ShopNow Axim</footer>
 
-    </nav>
-    
 </body>
 </html>
