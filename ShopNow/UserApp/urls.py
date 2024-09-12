@@ -29,5 +29,9 @@ urlpatterns=[
     path('all_users/',UserAdminFrontend.as_view(),name='all_users'),    
     path('single_user/<int:pk>',UserAdminFrontend.as_view(),name='single_user'),
     path('register_new/',registerFrontend,name='register_new'),
-    path('login_user/',login_page,name='login_user'),     
+    path('login_user/',login_page,name='login_user'),    
+    path('update/<pk>',update_profile,name='update'),
+    path('delete/<pk>',delete_user,name='delete'),   
+    path('admin/',admin_login,name='admin'),  
+    path('admin_options/',admin_options,name='admin_options'), 
 ]

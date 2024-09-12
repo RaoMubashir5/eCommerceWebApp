@@ -11,6 +11,7 @@ from order.serializer import orderSerializer
 from rest_framework import status
 
 from rest_framework.response import Response
+from UserApp.models import *
 
 from checkout.serializer import checkoutSerializer
 from checkout.models import checkoutPage
@@ -21,6 +22,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from .customPermissions import CustomizeAPIPermissions
 
+from .orderHistoryPermissions import orderHistoryPermissions
+
 class orderApi(APIView):
     authentication_classes=[JWTAuthentication]
     permission_classes=[CustomizeAPIPermissions]
@@ -29,16 +32,17 @@ class orderApi(APIView):
             requesting_user=request.user
             order_history=requesting_user.user_orders.all()
             if order_history:
-                print(order_history)
+                print("order history of ",requesting_user," :",order_history)
                 # checkout_info_obj=
                 # serialized_checkout_info=checkoutSerializer()
                 serialized_order=orderSerializer(order_history,many=True)
                 print(serialized_order)
                 # response_to_send={'serialized_checkout_info':serialized_checkout_info,
-                response_to_send={'serialized_order':serialized_order.data, }
-                return Response(response_to_send,status=status.HTTP_200_OK)
+               
+                return Response(serialized_order.data,status=status.HTTP_200_OK)
             else:
-                return Response("You hav'nt ordered yet!!",status=status.HTTP_400_BAD_REQUEST)
+                print("No............Orders")
+                return Response({'response':"You hav'nt ordered yet!!"},status=status.HTTP_400_BAD_REQUEST)
         else:
             try:
                 order_history_instance=order.objects.get(id=pk)
@@ -86,6 +90,32 @@ class orderApi(APIView):
         #return Response("your request is empty.",status=status.HTTP_400_BAD_REQUEST)
 
         
+
+
+class userOrders(APIView):
+    authentication_classes=[JWTAuthentication]
+    permission_classes=[orderHistoryPermissions]
+    def get(self,request,pk=None):
+       
+        if pk is None:
+            order_history=order.objects.all()
+            if order_history:
+                serialized=orderSerializer(order_history,many=True)
+                if serialized.is_valid():
+                    serialized.save()
+                    return Response(serialized.data,status=status.HTTP_200_OK)
+                return Response(f"Invlaid orders data{pk}",status=status.HTTP_400_BAD_REQUEST)
+            return Response(f"There are no orders placed yet!!{pk}",status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user_who_order=Webuser.objects.get(id=pk)
+            print("user_who_order :",user_who_order)
+            self.check_object_permissions(request,user_who_order)
+            order_history=user_who_order.user_orders.all()
+            if order_history:
+                serialized=orderSerializer(order_history,many=True)
+                return Response(serialized.data,status=status.HTTP_200_OK)
+                
+            return Response("You hav'nt ordered yet!!",status=status.HTTP_400_BAD_REQUEST)
 
 
 
