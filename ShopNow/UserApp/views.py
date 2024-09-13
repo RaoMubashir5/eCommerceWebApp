@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from product.templates import*
 # Create your views here.
 from UserApp.models import Webuser
 from UserApp.serializers import WebUserSerializer,loginSerializer
