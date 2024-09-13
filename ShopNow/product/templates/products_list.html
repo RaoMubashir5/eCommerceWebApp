@@ -9,7 +9,7 @@
     <title>Products</title>
     <style>
         .scrollable-container {
-            max-height: 80vh; /* Adjust the height for vertical scrolling */
+            max-height: 80vh; 
             overflow-y: auto;
         }
     </style>
@@ -42,8 +42,7 @@
                                 <li class="list-group-item font-weight-bold" style="font-weight: bolder;">Price: {{ product.price }}</li>
                             </ul>
                             <p class="card-text">{{ product.product_description }}</p>
-                            <a href="#" class="btn btn-primary" onclick="window.location.href='/api/update_product/{{product.id}}'">Update</a>
-                            <a href="#" class="btn btn-primary" onclick="window.location.href='/api/deleteProduct/{{product.id}}'">Delete</a>
+                            <a href="#" class="btn btn-primary" onclick="window.location.href='/api/update_product/{{product.id}}'">Add to Cart</a>
                         </div>
                     </div>
                 </div>

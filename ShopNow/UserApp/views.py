@@ -41,6 +41,8 @@ from order.serializer import orderSerializer
 
 
 
+
+
 @api_view(['POST'])
 def registerUser(request):
     if request.method == 'POST':

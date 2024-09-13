@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 
 from rest_framework.response import Response
 
@@ -8,7 +8,7 @@ from rest_framework import status
 from .models import addToCart,cartModel
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .customPermissions import CustomizeAPIPermissions
-
+import requests
 # Create your views here.
 
 
@@ -69,10 +69,31 @@ class AddcartView(APIView):
             else:
                 print("Cart object or product tobe deleted not sent!!")
                    
-                
 
 
-            
+def AddToCart(request,pk):
+    token=request.session.get('access_token')
+    if token:
+        headers={'Authorization': f"Bearer {token}"}
+            #decoding the token to extract the userr id :
+            #decode_token=JWT
+        print("............",headers)
+        requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/{pk}",headers=headers)
+        response_in_json=requesting_response.json()
+        data={
+
+        }
+        requesting_response=requests.post(f"http://127.0.0.1:8000/api/addToCart/",headers=headers)
+        response_in_json=requesting_response.json()
+        print(";;;;;;;;;;;;;",response_in_json)
+        if requesting_response.status_code==200:
+            return render(request,'products_list.html',{'products':response_in_json})
+        else:
+            if requesting_response.status_code==401:
+                return redirect('/api/home/')
+
+
+
 
 
 

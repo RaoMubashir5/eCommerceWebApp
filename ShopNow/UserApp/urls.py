@@ -33,5 +33,5 @@ urlpatterns=[
     path('update/<pk>',update_profile,name='update'),
     path('delete/<pk>',delete_user,name='delete'),   
     path('admin/',admin_login,name='admin'),  
-    path('admin_options/',admin_options,name='admin_options'), 
+    path('admin_options/',admin_options,name='admin_options'),
 ]
