@@ -84,8 +84,22 @@ class orderApi(APIView):
             return Response(serialized.errors,status=status.HTTP_201_CREATED)
                   
         #return Response("your request is empty.",status=status.HTTP_400_BAD_REQUEST)
-
-        
+class UserOrderDetail(APIView):
+    def get(self,request,pk=None):
+           if pk is None:
+            requesting_user=request.user
+            order_history=requesting_user.user_orders.all()
+            if order_history:
+                print(order_history)
+                # checkout_info_obj=
+                # serialized_checkout_info=checkoutSerializer()
+                serialized_order=orderSerializer(order_history,many=True)
+                print(serialized_order)
+                # response_to_send={'serialized_checkout_info':serialized_checkout_info,
+                response_to_send={'serialized_order':serialized_order.data, }
+                return Response(response_to_send,status=status.HTTP_200_OK)
+            else:
+                return Response("You hav'nt ordered yet!!",status=status.HTTP_400_BAD_REQUEST)
 
 
 
