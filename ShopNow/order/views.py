@@ -4,9 +4,9 @@ from django.shortcuts import render
 
 from rest_framework.views import APIView
 
-from .models import order
+from .models import order,OrderItem
 
-from order.serializer import orderSerializer
+from order.serializer import orderSerializer,orderItemSerializer
 
 from rest_framework import status
 
@@ -15,7 +15,8 @@ from UserApp.models import *
 
 from checkout.serializer import checkoutSerializer
 from checkout.models import checkoutPage
-from Cart.serializer import cartSerializer
+from Cart.models import cartModel,addToCart
+
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -29,16 +30,13 @@ class orderApi(APIView):
     permission_classes=[CustomizeAPIPermissions]
     def get(self,request,pk=None):
         if pk is None:
-            requesting_user=request.user
-            order_history=requesting_user.user_orders.all()
+            order_history=order.objects.all()
             if order_history:
-                print("order history of ",requesting_user," :",order_history)
+                print("order history of ",order_history)
                 # checkout_info_obj=
                 # serialized_checkout_info=checkoutSerializer()
                 serialized_order=orderSerializer(order_history,many=True)
-                print(serialized_order)
                 # response_to_send={'serialized_checkout_info':serialized_checkout_info,
-               
                 return Response(serialized_order.data,status=status.HTTP_200_OK)
             else:
                 print("No............Orders")
@@ -50,42 +48,52 @@ class orderApi(APIView):
                 return Response("There isno such Order with this order ID.",status=status.HTTP_400_BAD_REQUEST)
             self.check_object_permissions(request,order_history_instance)
                 # user_Who_ordered=order_history_instance.ordered_by_user
+        
+            order_items=order_history_instance.items
+            
 
-            checkout_info_obj=order_history_instance.checkout_info
-            serialized_checkout_info=checkoutSerializer(checkout_info_obj)
-
+            serialized_items=orderItemSerializer(order_items)
             serialized_order=orderSerializer(order_history_instance)
 
-            response_to_send={'Checkout-User-Info':serialized_checkout_info.data,'Order-Details':serialized_order.data, }
+            response_to_send={'Cart_items':serialized_items.data,'Order-Details':serialized_order.data, }
             return Response(response_to_send,status=status.HTTP_200_OK)               
             
                  
                   
        # return Response("your request is empty.",status=status.HTTP_400_BAD_REQUEST)
     
-    def post(self,request):
+    def post(self,request,pk):
         #if request.data:
             requesting_user=request.user
+
             request_dict=request.data
             print("yahantak ok ha",request_dict)
-            checkout_id=request.query_params.get('checkout_page_id') #pass param
-            bill=request.query_params.get('total_bill')#pass in query param
-            print("0222 yahan tak ok ha",checkout_id,type(checkout_id),checkout_id)
+            cart_id=pk #Cart id
+            
+            print("0222 yahan tak ok ha",cart_id,type(cart_id),cart_id)
                           
-            checkout_obj=checkoutPage.objects.get(id=checkout_id)
+            added_cart_obj=addToCart.objects.filter(cart=cart_id)
+          
             #adding the param data into the request.data
             request_dict['ordered_by_user']=requesting_user.id
-            request_dict['checkout_info']=checkout_obj.id
-            request_dict['total_bill']=bill
+            request_dict['total_bill']=50
             print("03 yahantak ok ha",request_dict)
             serialized=orderSerializer(data=request_dict)
             print("044 yahantak ok ha",request_dict)
             if serialized.is_valid():
                 print(serialized.errors)
-                serialized.save()
+                order_instance=serialized.save()
+                Total_bill=0
+                for cart in added_cart_obj:
+                    OrderItem.objects.create(order=order_instance,product=cart.cart_product,quantity=cart.product_quantity,
+                                             price=cart.cart_product.price)
+                    Total_bill=Total_bill+(cart.cart_product.price * cart.product_quantity)
+                order_instance.total_bill=Total_bill
+                order_instance.save()  
                 return Response("Your Order has been placed!!",status=status.HTTP_400_BAD_REQUEST)
-            print("Errors")
-            return Response(serialized.errors,status=status.HTTP_201_CREATED)
+            else:
+                print("Errors")
+                return Response(serialized.errors,status=status.HTTP_201_CREATED)
                   
         #return Response("your request is empty.",status=status.HTTP_400_BAD_REQUEST)
 

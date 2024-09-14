@@ -33,7 +33,6 @@ class AddcartView(APIView):
         
             
     def post(self,request):
-
         if request.data:
             serialized=AddToCartSerializer(data=request.data)
             #product=serialized.data.get('cart_product')
@@ -78,10 +77,10 @@ def AddToCart(request,pk):
             #decoding the token to extract the userr id :
             #decode_token=JWT
         print("............",headers)
-        requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/{pk}",headers=headers)
+        #requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/{pk}",headers=headers)
         response_in_json=requesting_response.json()
         data={
-
+            'cart_product':pk,''
         }
         requesting_response=requests.post(f"http://127.0.0.1:8000/api/addToCart/",headers=headers)
         response_in_json=requesting_response.json()
