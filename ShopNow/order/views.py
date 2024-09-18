@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from .models import order,OrderItem
 
-from order.serializer import orderSerializer,orderItemSerializer
+from ecommerceApp.ShopNow.ShopNow.allSerializers.orderSerializer import orderSerializer,orderItemSerializer
 
 from rest_framework import status
 

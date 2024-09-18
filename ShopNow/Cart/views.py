@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
-from .serializer import cartSerializer,AddToCartSerializer
+from ..ShopNow.allSerializers.cartSerializer import cartSerializer,AddToCartSerializer
 from rest_framework import status
 from .models import addToCart,cartModel
 from rest_framework_simplejwt.authentication import JWTAuthentication

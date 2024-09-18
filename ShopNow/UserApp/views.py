@@ -2,7 +2,7 @@ from django.shortcuts import render
 from product.templates import*
 # Create your views here.
 from UserApp.models import Webuser
-from UserApp.serializers import WebUserSerializer,loginSerializer
+from ecommerceApp.ShopNow.ShopNow.allSerializers.Userserializers import WebUserSerializer,loginSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render,redirect
@@ -37,7 +37,7 @@ import requests
 
 from order.models import order
 from order.views import orderApi
-from order.serializer import orderSerializer
+from ecommerceApp.ShopNow.ShopNow.allSerializers.orderSerializer import orderSerializer
 
 # to auhtenticatet the user after succesfull logina and setting the tokens in sessions,
 from django.contrib.auth import authenticate, login
