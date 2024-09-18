@@ -39,6 +39,8 @@ from order.models import order
 from order.views import orderApi
 from order.serializer import orderSerializer
 
+# to auhtenticatet the user after succesfull logina and setting the tokens in sessions,
+from django.contrib.auth import authenticate, login
 
 
 
@@ -248,9 +250,9 @@ class UserAdminFrontend(View):
         else:
             return HttpResponse("There is No token",status= status.HTTP_401_UNAUTHORIZED)
 def home(request):
-    if request.session.get('access_token'):
-        print(request.session.get('user_id'),request.session.get('access_token'))
-        return render(request,'home.html',{'user_id':request.session.get('user_id')})
+    if request.session.get('access_token') and request.user.is_authenticated:
+        print(request.session.get('user_id'),request.session.get('access_token'),"......",request.user,request.user.is_authenticated)
+        return render(request,'home.html',{'user_id':request.session.get('user_id'),'user':request.user,'viewCart':True})
     else:
         return render(request,'home.html')
 
@@ -272,7 +274,15 @@ def login_page(request):
             request.session['user_id']=response_to_pass.get('logged_user_id')
             print(request.session['access_token'])
             print("......",request.session['user_id'])
-            return redirect("/api/home/")
+            user_to_login=Webuser.objects.get(id=response_to_pass.get('logged_user_id'))
+            user=authenticate(request,username=form_data_dict.get('username'),password=form_data_dict.get('password'))
+            print(user)
+            if user:
+                login_user=login(request,user)
+                return redirect("/api/home/")
+            else:
+                return redirect("/api/login_user/")
+
         else:
             try:
                 response_to_pass = response_from_api.json()

@@ -3,37 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <title>Products</title>
     <style>
+        .cart-icon {
+            font-size: 2rem; /* Adjust icon size as needed */
+            position: absolute; /* Position it absolutely for alignment */
+            top: 1rem; /* Adjust top position as needed */
+            right: 1rem; /* Adjust right position as needed */
+            cursor: pointer; /* Change cursor to pointer for clickable icons */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgb(157, 219, 23);
+        }
+        .header-container {
+            position: relative;
+            height: 7vh;
+            background-color: rgb(6, 139, 51);
+            font-weight: bolder;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .header-content {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            align-items: center;
+            padding: 5px;
+        }
         .scrollable-container {
             max-height: 80vh; 
             overflow-y: auto;
+        }
+        .admin-button {
+            margin-left: 70%; /* Pushes button to the right */
         }
     </style>
 </head>
 
 <body>
-    <header style="background-color: rgb(6, 139, 51);height: 7vh;font-weight: bolder;
-                       display: flex;justify-content: center;align-items: center;">
-    <p>Available Products</p>
-    <button type="button" class="btn btn-info" onclick="window.location.href='/api/admin_options/'" style="margin-left: 40%;">Admin-home</button>
+    <header class="header-container">
+        <div class="header-content">
+            <button type="button" class="btn btn-primary btn-block" onclick="window.location.href='/api/home/'" style="margin-right: 80%;">Home</button>
+            <p style="position: fixed;">Available Products</p>
+            <i class="bi bi-cart cart-icon" onclick="window.location.href='/api/showCart/'"></i>
+        </div>
     </header>
     <hr>
     {% if error is True %}
-    <p>{{massage}}</p>
+    <p>{{message}}</p>
     {% else %}
     <hr>
-    
     <div class="container mt-4">
         <h1>{{success}}</h1>
         <hr>
         <div class="scrollable-container">
             <div class="row">
                 {% for product in products %}
-             <div class="col-md-4 mb-4">   <!--  3 cards would be in one row only -->
+                <div class="col-md-4 mb-4">   <!-- 3 cards would be in one row only -->
                     <div class="card h-100">
                         <img src="{{ product.product_image }}" class="card-img-top" alt="...">
                         <div class="card-body">
@@ -42,7 +73,9 @@
                                 <li class="list-group-item font-weight-bold" style="font-weight: bolder;">Price: {{ product.price }}</li>
                             </ul>
                             <p class="card-text">{{ product.product_description }}</p>
-                            <a href="#" class="btn btn-primary" onclick="window.location.href='/api/update_product/{{product.id}}'">Add to Cart</a>
+                      
+                            
+                            <a class="btn btn-primary" onclick="window.location.href='/api/addProductInCart/{{product.id}}'">Add to Cart</a>
                         </div>
                     </div>
                 </div>
@@ -51,7 +84,6 @@
         </div>
     </div>
     {% endif %}
-    <footer style="background-color: rgb(18, 78, 2);height: 7vh;font-weight:bolder;position: fixed;bottom: 0;width: 100%;z-index: 1000;
-                    display: flex; justify-content: center;align-items: center;">ShopNow Axim</footer>
+    <footer style="background-color: rgb(18, 78, 2);height: 7vh;font-weight:bolder;position: fixed;bottom: 0;width: 100%;z-index: 1000;display: flex; justify-content: center;align-items: center;">ShopNow Axim</footer>
 </body>
 </html>

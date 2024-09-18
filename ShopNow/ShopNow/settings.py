@@ -134,3 +134,4 @@ MEDIA_ROOT=BASE_DIR / 'media'
 #specified in the model with like: media/myImage 
 
 MEDIA_URL='/media/' #it would be like /media/boss.jpg
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'

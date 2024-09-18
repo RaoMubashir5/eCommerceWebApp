@@ -11,10 +11,10 @@ class CustomizeAPIPermissions(BasePermission):
              return request.user.is_authenticated
         
         if request.method in ['POST']:
-            cart_obj=cartModel.objects.get(id=int(request.data.get('cart'))) 
-            print("first is the check start",request.method,request.user,cart_obj.user_of_cart)
+            # cart_obj=cartModel.objects.get(id=int(request.data.get('cart'))) 
+            # print("first is the check start",request.method,request.user,cart_obj.user_of_cart)
 
-            if (request.user.is_authenticated) and (request.user== cart_obj.user_of_cart):
+            if request.user.is_authenticated and request.user:
                 print("User to  sahi ha")
                 return True
         

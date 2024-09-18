@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 
 # Create your views here.
 
@@ -25,6 +25,8 @@ from .customPermissions import CustomizeAPIPermissions
 
 from .orderHistoryPermissions import orderHistoryPermissions
 
+import requests
+
 class orderApi(APIView):
     authentication_classes=[JWTAuthentication]
     permission_classes=[CustomizeAPIPermissions]
@@ -48,14 +50,19 @@ class orderApi(APIView):
                 return Response("There isno such Order with this order ID.",status=status.HTTP_400_BAD_REQUEST)
             self.check_object_permissions(request,order_history_instance)
                 # user_Who_ordered=order_history_instance.ordered_by_user
+
         
-            order_items=order_history_instance.items
+            order_items=order_history_instance.items #it returns the related manager that works as queryset on iteration.
+            print("Order items",order_items)
             
-
-            serialized_items=orderItemSerializer(order_items)
+            try:
+                serialized_items=orderItemSerializer(order_items,many=True)
+            except:
+                return Response("Issue witht the Items serailizer",status=status.HTTP_204_NO_CONTENT) 
             serialized_order=orderSerializer(order_history_instance)
-
-            response_to_send={'Cart_items':serialized_items.data,'Order-Details':serialized_order.data, }
+            print("Order ",serialized_order.data)
+            response_to_send={'Cart_items':serialized_items.data,'Order_Details':serialized_order.data, }
+            print("response ",response_to_send)
             return Response(response_to_send,status=status.HTTP_200_OK)               
             
                  
@@ -90,10 +97,10 @@ class orderApi(APIView):
                     Total_bill=Total_bill+(cart.cart_product.price * cart.product_quantity)
                 order_instance.total_bill=Total_bill
                 order_instance.save()  
-                return Response("Your Order has been placed!!",status=status.HTTP_400_BAD_REQUEST)
+                return Response("Your Order has been placed!!",status=status.HTTP_201_CREATED)
             else:
                 print("Errors")
-                return Response(serialized.errors,status=status.HTTP_201_CREATED)
+                return Response(serialized.errors,status=status.HTTP_400_BAD_REQUEST)
                   
         #return Response("your request is empty.",status=status.HTTP_400_BAD_REQUEST)
 
@@ -127,5 +134,83 @@ class userOrders(APIView):
 
 
 
+def placeOrder(request,pk):
+    token=request.session.get('access_token')
+    if token and request.user.is_authenticated:
+        headers={'Authorization': f"Bearer {token}"}
+        requesting_response=requests.post(f"http://127.0.0.1:8000/api/order/{pk}",headers=headers)
+        
+        if requesting_response.status_code==201:
+            cart_instances=addToCart.objects.filter(cart=pk)
+            reset_cart=cart_instances.delete()
+            print("Successfully reseted the cart",reset_cart)
+            response_in_json=requesting_response.json()
+            product_info = []
+
+            # for each_cart in response_in_json:
+                # print("Each Cart Item:", each_cart)
+                # product_obj=product.objects.get(id=each_cart.get('cart_product'))
+                # product_info.append({'product_obj':product_obj,'quantity':each_cart.get('product_quantity'),
+                #                      'cart':each_cart.get('cart')})
+            return render(request,'your_Cart.html',{'empty':True,'product_info':product_info,'massage':response_in_json})
+        
+        else:
+            if requesting_response.status_code==401:
+                return redirect('/api/home/')
+            
+            return render(request,'your_Cart.html',{'empty':True,'massage':"Order not placed some errors there"})
 
 
+def ordershistory(request,pk=None):
+        print("Is user is super user:",request.user.is_superuser)
+        token=request.session.get('access_token')
+        if token and request.user.is_staff:
+
+            headers={'Authorization': f"Bearer {token}"}
+            if pk is None:
+                requesting_response=requests.get(f"http://127.0.0.1:8000/api/order/",headers=headers)
+                if requesting_response.status_code==200:
+                    response_in_json=requesting_response.json()
+                    
+                    return render(request,'orderHistory.html',{'orders':response_in_json})
+                else: 
+                    if requesting_response.status_code==401:
+                        return redirect('/api/home/')
+                    
+                    return render(request,'orderHistory.html',{'erorr':"There are no orders to show."})
+            else: 
+                print("Primary key of the order is ",pk)
+                requesting_response=requests.get(f"http://127.0.0.1:8000/api/order/{pk}",headers=headers)
+                if requesting_response.status_code==200:
+                    response_in_json=requesting_response.json()
+                    print(response_in_json.get('Order_Details'))
+                    orders=response_in_json.get('Order_Details')
+                    user_who_ordered=orders.get('id')
+                    return render(request,'orderedItems.html',{'orders':response_in_json.get('Order_Details'),
+                                                               'Items_details':response_in_json.get('Cart_items')})
+                else: 
+                    if requesting_response.status_code==401:
+                        return redirect('/api/home/')
+                    return render(request,'orderedItems.html',{'massage':"No details available."})
+        else:
+            return redirect('/api/home/')
+
+                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        

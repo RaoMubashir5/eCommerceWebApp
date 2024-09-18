@@ -18,11 +18,15 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-item nav-link active" href="/api/register_new/">Register<span class="sr-only">(current)</span></a>
+        <a class="nav-item nav-link active" href="/api/register_new/">Sign up</span></a>
         <a class="nav-item nav-link" href="/api/login_user/">Login</a>
+        {% if viewCart is True %}
         <a class="nav-item nav-link" href="/api/single_user/{{user_id}}">User Profile</a>
         <a class="nav-item nav-link " href="/api/admin/">Admin</a>
         <a class="nav-item nav-link " href="/api/products_list_user/">Do shopping</a>
+       
+        <a class="nav-item nav-link " href="/api/showCart/">Your Cart</a>
+        {% endif %}
       </div>
     </div>
   </nav>

@@ -8,7 +8,7 @@ class CustomizeAPIPermissions(BasePermission):
 
         print("here is the check start",request.user.is_superuser,request.auth,request.user,request.method,request.user.is_authenticated)
         if request.method=='GET':
-             return request.user.is_authenticated
+             return request.user.is_superuser
         
         if request.method in ['POST']:
             return request.user.is_authenticated and request.user
