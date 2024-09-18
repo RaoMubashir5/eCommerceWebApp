@@ -21,6 +21,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from .customPermissions import CustomizeAPIPermissions
 
+from UserApp.models import Webuser
+
 class orderApi(APIView):
     authentication_classes=[JWTAuthentication]
     permission_classes=[CustomizeAPIPermissions]
@@ -85,9 +87,9 @@ class orderApi(APIView):
                   
         #return Response("your request is empty.",status=status.HTTP_400_BAD_REQUEST)
 class UserOrderDetail(APIView):
-    def get(self,request,pk=None):
-           if pk is None:
-            requesting_user=request.user
+    def get(self,request,pk):
+           if pk is not None:
+            requesting_user=Webuser.objects.get(id=pk)
             order_history=requesting_user.user_orders.all()
             if order_history:
                 print(order_history)
