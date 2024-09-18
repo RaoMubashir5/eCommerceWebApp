@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect,HttpResponse
 
 from product.models import product
 
-from ecommerceApp.ShopNow.ShopNow.allSerializers.productSerializer import productSerializer
+from ShopNow.allSerializers.productSerializer import productSerializer
 
 # Create your views here.
 from rest_framework import status

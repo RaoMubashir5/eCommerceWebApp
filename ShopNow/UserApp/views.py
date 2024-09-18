@@ -2,7 +2,7 @@ from django.shortcuts import render
 from product.templates import*
 # Create your views here.
 from UserApp.models import Webuser
-from ecommerceApp.ShopNow.ShopNow.allSerializers.Userserializers import WebUserSerializer,loginSerializer
+from ShopNow.allSerializers.Userserializers import WebUserSerializer,loginSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render,redirect
@@ -37,7 +37,7 @@ import requests
 
 from order.models import order
 from order.views import orderApi
-from ecommerceApp.ShopNow.ShopNow.allSerializers.orderSerializer import orderSerializer
+
 
 # to auhtenticatet the user after succesfull logina and setting the tokens in sessions,
 from django.contrib.auth import authenticate, login
@@ -135,7 +135,7 @@ class get_register_users(APIView):
             print("......",instance,"........")
             self.check_object_permissions(request,instance)
             serialized=WebUserSerializer(instance)
-            return Response(serialized.data)
+            return Response(serialized.data,status=status.HTTP_200_OK)
            
            
     def put(self,request,pk=None):
@@ -194,24 +194,18 @@ class UserAdminFrontend(View):
 
             print("............",headers,pk)
           
-            if pk is None:
-                # requesting_user=requests.get(f"http://127.0.0.1:8000/api/user/{user_id}",headers=headers)
-                
-                # try:
-                #     request_response=requesting_user.json()
-                #     print("#########",request_response)
-                #     user=authenticate(username=request_response.get('username'), password=request_response.get('password'))
-                #     print(".......#####", user,".......")
-                #     user_status=user.is_superuser
-                #     print(f".........../....{user_status}........./..........")
-                # except:
-                #     return render(request,'users.html',{'data_reteived':False,'massage':request_response})
-                
-                if request.user.is_superuser:   
+            if pk is None:              
+                if request.user.is_staff:   
                     response_from_api=requests.get("http://127.0.0.1:8000/api/user/",headers=headers)
                     if response_from_api.status_code==200:
                         response_to_pass=response_from_api.json()
-                        return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
+                        user_identity=request.GET.get('admin')
+                        
+                        if user_identity:
+                            print("user is :",user_identity)
+                            return render(request,'users.html',{'response':response_to_pass,'data_reteived':True,'admin':True})
+                        else:
+                            return render(request,'users.html',{'response':response_to_pass,'data_reteived':True})
                     else:
                         print("Status code: ",response_from_api.status_code)
                         response_to_pass={}
@@ -222,31 +216,45 @@ class UserAdminFrontend(View):
                         return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage,'single':False})
                 else:
                     massage="ALERT!!, only Admin is Allowed to do this action!!"
-                    return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage,'single':False})
+                    return render(request,'users.html',{'data_reteived':False,'massage':massage,'single':False})
         
             else:
                 print(pk,request.user.is_superuser)
-            print("...........",pk)
-            response_from_api=requests.get(f"http://127.0.0.1:8000/api/user/{pk}",headers=headers)
-            print(response_from_api)
-            if response_from_api.status_code==200:
-                response_to_pass=response_from_api.json()
-                print(response_to_pass)
-                response_from_order=requests.get(f"http://127.0.0.1:8000/api/user_order/{pk}",headers=headers)
-                order_history=response_from_order.json()
-                if response_from_order.status_code==200:
-                    print("order history :",order_history)
-                    return render(request,'users.html',{'orders':order_history,'response':response_to_pass,'orderror':False,'single':True})
+                print("...........",pk)
+                response_from_api=requests.get(f"http://127.0.0.1:8000/api/user/{pk}",headers=headers)
+                print(response_from_api)
+                if response_from_api.status_code==200:
+
+                    response_to_pass=response_from_api.json()
+
+                    print("it is cming till",response_to_pass)
+                    user_identity=request.GET.get('admin')
+                    response_from_order=requests.get(f"http://127.0.0.1:8000/api/user_order/{pk}",headers=headers)
+                    
+                    if response_from_order.status_code==200:
+                        order_history=response_from_order.json()
+                        print("order history :",order_history)
+                        user_identity=request.GET.get('admin')
+                     
+                        if user_identity:
+                            return render(request,'users.html',{'orders':order_history,'response':response_to_pass,
+                                                                'orderror':False,'single':True,'admin':True})
+                        else:
+                             return render(request,'users.html',{'orders':order_history,'response':response_to_pass,
+                                                                'orderror':False,'single':True})
+                    else:
+                        if user_identity:
+                            return render(request,'users.html',{'response':response_to_pass,'orderror':True,'single':True,'orders':"You have No orders yet!!",'admin':True})
+                        return render(request,'users.html',{'response':response_to_pass,'orderror':True,'single':True,'orders':"You have No orders yet!!",})
+
                 else:
-                    return render(request,'users.html',{'response':response_to_pass,'orderror':True,'single':True,'orders':order_history})
-            else:
-                print("Detail Status code: ",response_from_api.status_code)
-                response_to_pass={}
-                if response_from_api.status_code==401:
-                    massage="ALERT: You are unauthorized to access this!!!"
-                else:
-                    massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
-                return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})            
+                    print("Detail Status code: ",response_from_api.status_code)
+                    response_to_pass={}
+                    if response_from_api.status_code==401:
+                        massage="ALERT: You are unauthorized to access this!!!"
+                    else:
+                        massage=f"Request to retrieve data is failed. status_code: {response_from_api.status_code}"
+                    return render(request,'users.html',{'response':response_to_pass,'data_reteived':False,'massage':massage})            
         else:
             return HttpResponse("There is No token",status= status.HTTP_401_UNAUTHORIZED)
 def home(request):
@@ -383,6 +391,16 @@ def delete_user(request,pk):
                 return render(request,'updateUser.html',{'massage':f"Try again,{response_to_pass}",'response':response_to_pass})
         else:
             return render(request,'updateUser.html',{'massage':"your pk is None"})
+def userName(user_id,header):
+    response_from_api=requests.get(f"http://127.0.0.1:8000/api/user/{user_id}",headers=header)
+    
+    if response_from_api.status_code==200:
+        response_to_pass=response_from_api.json()
+        username=response_to_pass.username
+        return username
+    else:
+        return -1
+            
 
 def admin_login(request):
     if request.method=='GET':
@@ -405,7 +423,15 @@ def admin_login(request):
                     request.session['user_id']=response_to_pass.get('logged_user_id')
                     print(request.session['access_token'])
                     print("......",request.session['user_id'])
-                    return render(request,"admin_options.html",{'user_id':request.session['user_id']})
+                    
+                    #django authentication for more permissions .
+                    user=authenticate(request,username=form_data_dict.get('username'),password=form_data_dict.get('password'))
+                    print("User exists ::",user)
+                    if user:
+                        login_user=login(request,user)
+                        return render(request,"admin_options.html",{'user_id':request.session['user_id']})
+                    else:
+                        return redirect("/api/admin/")
                 else:
                     response_to_pass = response_from_api.json()
                     print(response_to_pass)
@@ -421,7 +447,7 @@ def admin_options(request):
     if token:
         header={'Authorization': f"Bearer {token}"}
         if request.method=='GET':
-            return render(request,'admin_options.html')
+            return render(request,'admin_options.html',{'user_id':request.session['user_id']})
 
 
             

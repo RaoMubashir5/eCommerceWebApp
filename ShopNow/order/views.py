@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from .models import order,OrderItem
 
-from ecommerceApp.ShopNow.ShopNow.allSerializers.orderSerializer import orderSerializer,orderItemSerializer
+from ShopNow.allSerializers.orderSerializer import orderSerializer,orderItemSerializer
 
 from rest_framework import status
 
@@ -116,10 +116,9 @@ class userOrders(APIView):
             order_history=order.objects.all()
             if order_history:
                 serialized=orderSerializer(order_history,many=True)
-                if serialized.is_valid():
-                    serialized.save()
-                    return Response(serialized.data,status=status.HTTP_200_OK)
-                return Response(f"Invlaid orders data{pk}",status=status.HTTP_400_BAD_REQUEST)
+                return Response(serialized.data,status=status.HTTP_200_OK)
+            
+            print("invlaid data")
             return Response(f"There are no orders placed yet!!{pk}",status=status.HTTP_400_BAD_REQUEST)
         else:
             user_who_order=Webuser.objects.get(id=pk)
@@ -129,8 +128,8 @@ class userOrders(APIView):
             if order_history:
                 serialized=orderSerializer(order_history,many=True)
                 return Response(serialized.data,status=status.HTTP_200_OK)
-                
-            return Response("You hav'nt ordered yet!!",status=status.HTTP_400_BAD_REQUEST)
+            print("No orders",order_history)
+            return Response("You hav'nt ordered yet!!",status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -164,7 +163,7 @@ def placeOrder(request,pk):
 def ordershistory(request,pk=None):
         print("Is user is super user:",request.user.is_superuser)
         token=request.session.get('access_token')
-        if token and request.user.is_staff:
+        if token :
 
             headers={'Authorization': f"Bearer {token}"}
             if pk is None:
