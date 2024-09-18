@@ -16,11 +16,21 @@
 </head>
 
 <body>
-    <header style="background-color: rgb(6, 139, 51);height: 7vh;font-weight: bolder;
-                       display: flex;justify-content: center;align-items: center;">
-    <p>Available Products</p>
-    <button type="button" class="btn btn-info" onclick="window.location.href='/api/admin_options/'" style="margin-left: 40%;">Admin-home</button>
-    </header>
+    <header style="background-color: rgb(6, 139, 51); height: 7vh; font-weight: bolder; 
+               display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+    <!-- Admin Button -->
+    <button type="button" class="btn btn-info" onclick="window.location.href='/api/admin_options/'">
+        Admin-home
+    </button>
+    <p style="margin: 0; color: white;">Available Products</p>
+    <!-- Search Form -->
+    <form class="form-inline my-2 my-lg-0" style="display: flex; gap: 10px;" method="post" action="{% url 'searchView' %}">
+        {% csrf_token %}
+        <input name="product_name" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Search</button>
+    </form>
+</header>
+
     <hr>
     {% if error is True %}
     <p>{{massage}}</p>

@@ -21,7 +21,8 @@ class CustomizeAPIPermissions(BasePermission):
         # Allow PUT, PATCH, DELETE if user is authenticated
         if request.method in ['PUT', 'PATCH', 'DELETE','OPTIONS']:
             print("Second is the check start",request.method)
-            return request.user.is_authenticated
+            if request.user.is_authenticated:
+                return True
 
 
     def has_object_permission(self, request, view, obj): 
@@ -29,9 +30,12 @@ class CustomizeAPIPermissions(BasePermission):
         print("object is the check start",request.method)
         print(f"Request User: {request.user}",request.method)
         # print(f"Object Creator: {request.user.created_by}",request.method)
-        # print(f"token: {request.auth}",request.method)
+        print(f"User authenticated? : {request.user.is_authenticated}",request.method)
         # Allow GET, PUT, PATCH, DELETE, OPTIONS if the user created the object or is a superuser
-        if request.method in ['GET', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']:
+        if request.method == 'GET':
+            if request.user.is_authenticated:
+                return True
+        if request.method in ['PUT', 'PATCH', 'DELETE', 'OPTIONS']:
             print("coming in")
             return request.user.is_superuser
         

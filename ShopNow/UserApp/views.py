@@ -35,8 +35,8 @@ from Cart.models import cartModel
 from django.views import View
 import requests
 
-from order.models import order
-from order.views import orderApi
+# from order.models import order
+# from order.views import orderApi
 
 
 # to auhtenticatet the user after succesfull logina and setting the tokens in sessions,
@@ -258,10 +258,17 @@ class UserAdminFrontend(View):
         else:
             return HttpResponse("There is No token",status= status.HTTP_401_UNAUTHORIZED)
 def home(request):
-    if request.session.get('access_token') and request.user.is_authenticated:
-        print(request.session.get('user_id'),request.session.get('access_token'),"......",request.user,request.user.is_authenticated)
-        return render(request,'home.html',{'user_id':request.session.get('user_id'),'user':request.user,'viewCart':True})
+
+    token=request.session.get('access_token')
+    authenticated_user=request.user.is_authenticated
+    
+    if  token and authenticated_user:
+        user_id=request.session.get('user_id')
+        user_who_requested=request.user
+        #print(request.session.get('user_id'),request.session.get('access_token'),"......",request.user,request.user.is_authenticated)
+        return render(request,'home.html',{'user_id':user_id,'user':user_who_requested,'viewCart':True})
     else:
+        print("could login in first time",token,authenticated_user)
         return render(request,'home.html')
 
 
@@ -278,24 +285,26 @@ def login_page(request):
         if response_from_api.status_code==200:
             response_to_pass = response_from_api.json()
             
-            request.session['access_token']=response_to_pass.get('access')
-            request.session['user_id']=response_to_pass.get('logged_user_id')
+            token=response_to_pass.get('access')
+            user_id=response_to_pass.get('logged_user_id')
+            request.session['access_token']=token
+            request.session['user_id']=user_id
             print(request.session['access_token'])
             print("......",request.session['user_id'])
-            user_to_login=Webuser.objects.get(id=response_to_pass.get('logged_user_id'))
-            user=authenticate(request,username=form_data_dict.get('username'),password=form_data_dict.get('password'))
+            username=form_data_dict.get('username')
+            password=form_data_dict.get('password')
+            user=authenticate(request,username=username,password=password)
             print(user)
-            if user:
+            if user is not None:
                 login_user=login(request,user)
-                return redirect("/api/home/")
+                print("Login to home")
+                return render(request,'home.html',{'user_id':user_id})
             else:
                 return redirect("/api/login_user/")
 
         else:
             try:
-                response_to_pass = response_from_api.json()
-                print(response_to_pass)
-                return render(request,'loginPage.html',{'massage':response_to_pass,'error':True})
+                return render(request,'loginPage.html',{'massage':"NOT login, Please try again!!",'error':True})
             except:
                 return Response({'error': 'Invalid JSON response'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
@@ -396,7 +405,7 @@ def userName(user_id,header):
     
     if response_from_api.status_code==200:
         response_to_pass=response_from_api.json()
-        username=response_to_pass.username
+        username=response_to_pass.get('username')
         return username
     else:
         return -1
@@ -419,17 +428,19 @@ def admin_login(request):
                 if response_from_api.status_code==200:
                     response_to_pass = response_from_api.json()
                     
-                    request.session['access_token']=response_to_pass.get('access')
-                    request.session['user_id']=response_to_pass.get('logged_user_id')
+                    token=response_to_pass.get('access')
+                    user_id=response_to_pass.get('logged_user_id')
+                    request.session['access_token']=token
+                    request.session['user_id']=user_id
                     print(request.session['access_token'])
                     print("......",request.session['user_id'])
-                    
-                    #django authentication for more permissions .
-                    user=authenticate(request,username=form_data_dict.get('username'),password=form_data_dict.get('password'))
-                    print("User exists ::",user)
+                    username=form_data_dict.get('username')
+                    password=form_data_dict.get('password')
+                    user=authenticate(request,username=username,password=password)
+                    print(user)
                     if user:
                         login_user=login(request,user)
-                        return render(request,"admin_options.html",{'user_id':request.session['user_id']})
+                        return render(request,"admin_options.html",{'user_id':user_id})
                     else:
                         return redirect("/api/admin/")
                 else:

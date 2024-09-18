@@ -19,24 +19,25 @@
 
     <div class="container mt-5">
         {% if Items_details %}
-            <p>orders.ordered_by_user</p>
-            <hr>
+           
 
             <table class="table table-bordered">
-                <thead>
-                    <tr><th>Order </th></tr>
+                        
+                <thead> 
+                    <tr>
+                        <th>Customer Name</th>
+                        <td>{{orders}}</td>
+                    </tr>
                     <tr>
                         <th>Order id </th>
                         <th>Product </th>
                         <th>Price </th>
                         <th>Quantity </th>
                     </tr>
-                    <tr>
-                        <th>Total Bill: </th>
-                    </tr>
+                    
                 </thead>
+               
                 <tbody>
-                 
                     {% for item in Items_details %}
                     <tr>
                         <td>{{item.order}}</td> 
@@ -45,8 +46,14 @@
                         <td>{{ item.quantity }}</td>
                         </tr>
                     {% endfor %}
-                    <tr>{{orders.total_bill}}</tr>
+                   
+                    </tr>
+                    <tr>
+                        <th>Total bill:</th>
+                        <td> {{total_bill}}</td>
+                    </tr>
                 </tbody>
+              
    
             </table>
         {% else %}

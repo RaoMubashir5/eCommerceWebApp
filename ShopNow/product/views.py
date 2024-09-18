@@ -14,9 +14,15 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,IsAuthenticatedOrReadOnly
 from .customPermissions import CustomizeAPIPermissions
 import requests
+
+from rest_framework.filters import SearchFilter
+from django.utils.text import slugify
+
+
 class productView(APIView):
     authentication_classes=[JWTAuthentication]
     permission_classes=[CustomizeAPIPermissions]
+    
     def post(self,request):
         
         if request.data:
@@ -41,12 +47,18 @@ class productView(APIView):
         else:
             
             # try:
-            instance=product.objects.get(id=pk)
-            print("Response",self.check_object_permissions(request,instance))
-            # except:
-            #     return Response("Product does not exists!!")
-            serialized=productSerializer(instance,many=False)
-            return Response(serialized.data)
+            print("Product name:",pk)
+            instance=product.objects.filter(id=pk)
+            # print("instance is :",instance)
+            if instance.exists():
+                self.check_object_permissions(request,instance[0])
+                # except:
+                #     return Response("Product does not exists!!")
+                serialized=productSerializer(instance[0])
+                print("Response: ",serialized.data)
+                return Response(serialized.data,status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
     def put(self,request,pk=None):
         if pk is not None:
             instance=product.objects.get(id=pk)
@@ -89,7 +101,23 @@ class productView(APIView):
                 return Response("Deleted successfully.")
             except Exception as e:
                 Response({'issue':e},status=status.HTTP_400_BAD_REQUEST)
-            
+
+class searchApiByName(APIView):
+    authentication_classes=[JWTAuthentication]
+    permission_classes=[CustomizeAPIPermissions]
+    def get(self,request,product_name):
+            print("Product name:",product_name)
+            instance=product.objects.filter(product_name__icontains=product_name)
+            # print("instance is :",instance)
+            if instance.exists():
+                self.check_object_permissions(request,instance[0])
+                # except:
+                #     return Response("Product does not exists!!")
+                serialized=productSerializer(instance[0])
+                print("Response: ",serialized.data)
+                return Response(serialized.data,status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class ListProducts(View):
@@ -104,16 +132,35 @@ class ListProducts(View):
             #decoding the token to extract the userr id :
             #decode_token=JWT
             print("............",headers,pk)
-            if pk is None:
-                requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/",headers=headers)
+           
+            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/",headers=headers)
+            response_in_json=requesting_response.json()
+            print(response_in_json)
+            if requesting_response.status_code==200:
+                return render(request,'listProduct.html',{'products':response_in_json})
+            else:
+                if requesting_response.status_code==401:
+                    return redirect('/api/home/')
+                return redirect('/api/listProduct.html/')
+           
+def search(request):
+        token=request.session.get('access_token')
+        if token:
+            headers={'Authorization': f"Bearer {token}"}
+            Query_param=request.POST.get('product_name')
+            print("query param:",Query_param)
+               
+            requesting_response=requests.get(f"http://127.0.0.1:8000/api/search/{Query_param}",headers=headers)
+            if requesting_response.status_code==200:
                 response_in_json=requesting_response.json()
-                print(response_in_json)
-                if requesting_response.status_code==200:
-                    return render(request,'listProduct.html',{'products':response_in_json})
-                else:
-                    if requesting_response.status_code==401:
-                        return redirect('/api/home/')
-                    return redirect('/api/listProduct.html/')
+                print("Returned :",response_in_json)
+                return render(request,'singleSearchedProduct.html',{'product':response_in_json})
+            else:
+                if requesting_response.status_code==401:
+                    return redirect('/api/home/')
+                return render(request,'singleSearchedProduct.html',{'massage':"Product Not found!!"})
+
+    
 
 def delete_Product(request,pk):
     token=request.session.get('access_token')
@@ -151,6 +198,7 @@ def update_Product(request,pk):
             response_in_json=requesting_response.json()
             print("::::::::::GEt>>>>>>>>>",response_in_json,":::::::::::::::::::::<<<<<<<")
             if requesting_response.status_code==200:
+                response_in_json=requesting_response.json()
                 return render(request,'updateProduct.html',{'product':response_in_json})
             else:
                 return redirect('/api/admin_options/')

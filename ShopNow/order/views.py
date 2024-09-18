@@ -16,6 +16,7 @@ from UserApp.models import *
 from checkout.serializer import checkoutSerializer
 from checkout.models import checkoutPage
 from Cart.models import cartModel,addToCart
+from UserApp.views import userName
 
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -184,8 +185,11 @@ def ordershistory(request,pk=None):
                     response_in_json=requesting_response.json()
                     print(response_in_json.get('Order_Details'))
                     orders=response_in_json.get('Order_Details')
-                    user_who_ordered=orders.get('id')
-                    return render(request,'orderedItems.html',{'orders':response_in_json.get('Order_Details'),
+                    
+                    user_who_ordered=userName(orders.get('id'),headers)
+                    total_bill=orders.get('total_bill')
+                    print("username function returns:",user_who_ordered)
+                    return render(request,'orderedItems.html',{'orders':user_who_ordered,'total_bill':total_bill,
                                                                'Items_details':response_in_json.get('Cart_items')})
                 else: 
                     if requesting_response.status_code==401:
