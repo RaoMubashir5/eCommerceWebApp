@@ -12,9 +12,9 @@ from rest_framework import status
 from .serializer import checkoutSerializer
 from .customPermissions import CustomizeAPIPermissions
 
-from product.serializer import productSerializer
+from ecommerceApp.ShopNow.ShopNow.allSerializers.productSerializer import productSerializer
 from Cart.models import addToCart
-from Cart.serializer import AddToCartSerializer
+from ecommerceApp.ShopNow.ShopNow.allSerializers.cartSerializer import AddToCartSerializer
 
 
 # Create your views here.0
