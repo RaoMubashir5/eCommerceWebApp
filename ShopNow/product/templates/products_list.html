@@ -40,17 +40,33 @@
             overflow-y: auto;
         }
         .admin-button {
-            margin-left: 70%; /* Pushes button to the right */
+            margin-left: 70%; 
         }
     </style>
 </head>
 
 <body>
     <header class="header-container">
-        <div class="header-content">
-            <button type="button" class="btn btn-primary btn-block" onclick="window.location.href='/api/home/'" style="margin-right: 80%;">Home</button>
-            <p style="position: fixed;">Available Products</p>
-            <i class="bi bi-cart cart-icon" onclick="window.location.href='/api/showCart/'"></i>
+        <div class="header-content d-flex justify-content-between align-items-center">
+         
+            <button type="button" class="btn btn-primary me-3" onclick="window.location.href='/api/home/'">Home</button>
+    
+            <p class="mb-0 me-3">Available Products</p>
+    
+            <div class="d-flex align-items-center" style="margin-right: 100px;">
+         
+                <div class="dropdown me-3">  
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="priceSortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Sort by Price
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="priceSortDropdown">
+                        <li><a class="dropdown-item" href="?sort=low_to_high">Low to High</a></li>
+                        <li><a class="dropdown-item" href="?sort=high_to_low">High to Low</a></li>
+                    </ul>
+                </div>
+                <i class="bi bi-cart cart-icon" onclick="window.location.href='/api/showCart/'" style="cursor: pointer; font-size: 24px;position: fixed;"></i>
+             
+            </div>
         </div>
     </header>
     <hr>

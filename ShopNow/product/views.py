@@ -41,7 +41,15 @@ class productView(APIView):
 
     def get(self,request,pk=None):
         if pk is None:
-            products=product.objects.all()
+            sort_by=request.GET.get('sort_order')
+            
+            if sort_by:
+                if sort_by=='low_to_high':
+                    products=product.objects.all().order_by('price')
+                else:
+                    products=product.objects.all().order_by('-price')
+            else:
+                products=product.objects.all()
             serialized=productSerializer(products,many=True)
             return Response(serialized.data,status=status.HTTP_200_OK)
         else:
@@ -132,8 +140,10 @@ class ListProducts(View):
             #decoding the token to extract the userr id :
             #decode_token=JWT
             print("............",headers,pk)
-           
-            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/",headers=headers)
+   
+            sort_order=request.GET.get('sort')
+            print("sort:",sort_order)
+            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}",headers=headers)
             response_in_json=requesting_response.json()
             print(response_in_json)
             if requesting_response.status_code==200:
@@ -271,7 +281,9 @@ def products_list_for_user(request):
             #decoding the token to extract the userr id :
             #decode_token=JWT
             print("............",headers)
-            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/",headers=headers)
+            sort_order=request.GET.get('sort')
+            print("sort:",sort_order)
+            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}",headers=headers)
             response_in_json=requesting_response.json()
             print(";;;;;;;;;;;;;",response_in_json)
             if requesting_response.status_code==200:

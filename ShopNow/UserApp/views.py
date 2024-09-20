@@ -298,7 +298,7 @@ def login_page(request):
             if user is not None:
                 login_user=login(request,user)
                 print("Login to home")
-                return render(request,'home.html',{'user_id':user_id})
+                return redirect('/api/home/')
             else:
                 return redirect("/api/login_user/")
 
