@@ -16,7 +16,8 @@ from .customPermissions import CustomizeAPIPermissions
 import requests
 
 from rest_framework.filters import SearchFilter
-from django.utils.text import slugify
+from django.core.paginator import Paginator
+import math
 
 
 class productView(APIView):
@@ -42,16 +43,38 @@ class productView(APIView):
     def get(self,request,pk=None):
         if pk is None:
             sort_by=request.GET.get('sort_order')
-            
             if sort_by:
                 if sort_by=='low_to_high':
                     products=product.objects.all().order_by('price')
+                  
                 else:
                     products=product.objects.all().order_by('-price')
+                   
             else:
                 products=product.objects.all()
+            
+
+            products_per_pages=3
+            total_products=products.count()
+            total_pages=math.ceil(total_products/products_per_pages)
+            page_number=1
+            param_page_number=request.GET.get('page')
+            print("page :",param_page_number)
+            if param_page_number !='None': 
+                
+                paginator=Paginator(products,products_per_pages) #it is to set the range
+                page_number=int(param_page_number) #it is to get the query param page number          
+                if page_number > total_pages:
+                    products=paginator.get_page(1)
+                    page_number=1
+                else:
+                    products=paginator.get_page(page_number) #final data to send
+
+                    
+
             serialized=productSerializer(products,many=True)
-            return Response(serialized.data,status=status.HTTP_200_OK)
+
+            return Response({'page_number':page_number, 'total_pages':total_pages, 'products': serialized.data},status=status.HTTP_200_OK)
         else:
             
             # try:
@@ -144,10 +167,10 @@ class ListProducts(View):
             sort_order=request.GET.get('sort')
             print("sort:",sort_order)
             requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}",headers=headers)
-            response_in_json=requesting_response.json()
-            print(response_in_json)
             if requesting_response.status_code==200:
-                return render(request,'listProduct.html',{'products':response_in_json})
+                response_in_json = requesting_response.json()
+                products=response_in_json.get('products')
+                return render(request,'listProduct.html',{'products':products})
             else:
                 if requesting_response.status_code==401:
                     return redirect('/api/home/')
@@ -282,12 +305,35 @@ def products_list_for_user(request):
             #decode_token=JWT
             print("............",headers)
             sort_order=request.GET.get('sort')
+            page=request.GET.get('page')
             print("sort:",sort_order)
-            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}",headers=headers)
-            response_in_json=requesting_response.json()
-            print(";;;;;;;;;;;;;",response_in_json)
+            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}&page={page}",headers=headers)
+            
             if requesting_response.status_code==200:
-                return render(request,'products_list.html',{'products':response_in_json})
+                response_in_json = requesting_response.json()
+                products=response_in_json.get('products')
+             
+                page_number=response_in_json.get('page_number')
+                total_page=response_in_json.get('total_pages')
+                
+                if total_page > page_number:
+                    next=page_number+1
+                    prev=page_number-1
+                    
+                
+                elif total_page == page_number:
+                    # next=page_number+1
+                    next=0
+                    if page_number > 1 :
+                        prev=page_number-1
+                    else:
+                        prev=0
+            
+             
+                    
+
+                # print(";;;;;;;;;;;;;",response_in_json,"  prev: ",prev,"  next:",next,"  ",products,";;;;;;;;;;;" )
+                return render(request,'products_list.html',{'products':products,'next':next,'prev':prev,'page_number':page_number})
             else:
                 if requesting_response.status_code==401:
                     return redirect('/api/home/')
