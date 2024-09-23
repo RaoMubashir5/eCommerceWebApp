@@ -8,7 +8,7 @@
 <body>
     {% if massage %}
     <p>{{massage}}</p>
-    <button type="button" class="btn btn-warning" onclick="window.location.href='/api/listproduct/?page=1'">GO Back To Product Listing</button>
+    <button type="button" class="btn btn-warning" onclick="window.location.href='/api/products_list_user/?page=1'">GO Back To Product Listing</button>
     {% else %}
     <div class="card" style="width: 100%; max-width: 350px; margin: 20px auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 10px;">
         <img src="{{product.product_image}}" class="card-img-top" alt="Product Image" style="width: 100%; height: auto; border-top-left-radius: 10px; border-top-right-radius: 10px;">
@@ -19,12 +19,8 @@
             <li class="list-group-item font-weight-bold" style="font-weight: bolder;">Price: {{ product.price }}</li>
           </ul>
           <p class="card-text">{{ product.product_description }}</p>
-      
-          <!-- Update and Delete Buttons -->
           <div class="d-flex justify-content-between" style="margin-bottom: 10px;">
-            <button type="button" class="btn btn-warning" onclick="window.location.href='/api/update_product/{{product.id}}'">Update</button>
-            <button type="button" class="btn btn-danger" onclick="window.location.href='/api/deleteProduct/{{product.id}}'">Delete</button>
-            <button type="button" class="btn btn-info" onclick="window.location.href='/api/listproduct/?page=1'">Product Listing</button>
+            <button type="button" class="btn btn-info" onclick="window.location.href='/api/products_list_user/?page=1'">Product Listing</button>
 
         </div>
       

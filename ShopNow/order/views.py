@@ -16,9 +16,7 @@ from UserApp.models import *
 from checkout.serializer import checkoutSerializer
 from checkout.models import checkoutPage
 from Cart.models import cartModel,addToCart
-from UserApp.views import userName
-
-
+from UserApp.views import get_user_name
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 
@@ -178,15 +176,14 @@ def ordershistory(request,pk=None):
                         return redirect('/api/home/')
                     
                     return render(request,'orderHistory.html',{'erorr':"There are no orders to show."})
-            else: 
-                print("Primary key of the order is ",pk)
+            else:
                 requesting_response=requests.get(f"http://127.0.0.1:8000/api/order/{pk}",headers=headers)
                 if requesting_response.status_code==200:
                     response_in_json=requesting_response.json()
                     print(response_in_json.get('Order_Details'))
                     orders=response_in_json.get('Order_Details')
                     
-                    user_who_ordered=userName(orders.get('id'),headers)
+                    user_who_ordered=get_user_name(orders.get('id'),headers)
                     total_bill=orders.get('total_bill')
                     print("username function returns:",user_who_ordered)
                     return render(request,'orderedItems.html',{'orders':user_who_ordered,'total_bill':total_bill,

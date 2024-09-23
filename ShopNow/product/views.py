@@ -46,45 +46,31 @@ class productView(APIView):
             if sort_by:
                 if sort_by=='low_to_high':
                     products=product.objects.all().order_by('price')
-                  
                 else:
                     products=product.objects.all().order_by('-price')
-                   
             else:
                 products=product.objects.all()
-            
-
             products_per_pages=3
             total_products=products.count()
             total_pages=math.ceil(total_products/products_per_pages)
             page_number=1
             param_page_number=request.GET.get('page')
             print("page :",param_page_number)
-            if param_page_number !='None': 
-                
-                paginator=Paginator(products,products_per_pages) #it is to set the range
-                page_number=int(param_page_number) #it is to get the query param page number          
+            if param_page_number !='None' and param_page_number is not None:
+                paginator=Paginator(products,products_per_pages)
+                page_number=int(param_page_number)        
                 if page_number > total_pages:
                     products=paginator.get_page(1)
                     page_number=1
                 else:
-                    products=paginator.get_page(page_number) #final data to send
-
-                    
-
+                    products=paginator.get_page(page_number)
             serialized=productSerializer(products,many=True)
-
             return Response({'page_number':page_number, 'total_pages':total_pages, 'products': serialized.data},status=status.HTTP_200_OK)
         else:
-            
-            # try:
             print("Product name:",pk)
             instance=product.objects.filter(id=pk)
-            # print("instance is :",instance)
             if instance.exists():
                 self.check_object_permissions(request,instance[0])
-                # except:
-                #     return Response("Product does not exists!!")
                 serialized=productSerializer(instance[0])
                 print("Response: ",serialized.data)
                 return Response(serialized.data,status=status.HTTP_200_OK)
@@ -139,42 +125,46 @@ class searchApiByName(APIView):
     def get(self,request,product_name):
             print("Product name:",product_name)
             instance=product.objects.filter(product_name__icontains=product_name)
-            # print("instance is :",instance)
             if instance.exists():
                 self.check_object_permissions(request,instance[0])
-                # except:
-                #     return Response("Product does not exists!!")
                 serialized=productSerializer(instance[0])
                 print("Response: ",serialized.data)
                 return Response(serialized.data,status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
-
 class ListProducts(View):
-
     def get(self,request,*args,**kwargs):
-
         token=request.session.get('access_token')
         pk =kwargs.get('pk')
         print(pk)
         if token:
             headers={'Authorization': f"Bearer {token}"}
-            #decoding the token to extract the userr id :
-            #decode_token=JWT
             print("............",headers,pk)
-   
             sort_order=request.GET.get('sort')
+            page=request.GET.get('page')
             print("sort:",sort_order)
-            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}",headers=headers)
+            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}&page={page}",headers=headers)
             if requesting_response.status_code==200:
                 response_in_json = requesting_response.json()
                 products=response_in_json.get('products')
-                return render(request,'listProduct.html',{'products':products})
+                page_number=response_in_json.get('page_number')
+                total_page=response_in_json.get('total_pages')
+                if total_page > page_number:
+                    next=page_number+1
+                    prev=page_number-1                
+                elif total_page == page_number:
+                    # next=page_number+1
+                    next=0
+                    if page_number > 1 :
+                        prev=page_number-1
+                    else:
+                        prev=0
+                return render(request,'listProduct.html',{'products':products,'next':next,'prev':prev,'page_number':page_number,'sort':sort_order})
             else:
                 if requesting_response.status_code==401:
                     return redirect('/api/home/')
-                return redirect('/api/listProduct.html/')
+                return redirect('/api/listproduct/')
            
 def search(request):
         token=request.session.get('access_token')
@@ -187,7 +177,10 @@ def search(request):
             if requesting_response.status_code==200:
                 response_in_json=requesting_response.json()
                 print("Returned :",response_in_json)
-                return render(request,'singleSearchedProduct.html',{'product':response_in_json})
+                if request.GET.get('product'):
+                    return render(request,'searchedProductForUser.html',{'product':response_in_json})
+                else:
+                    return render(request,'singleSearchedProduct.html',{'product':response_in_json})
             else:
                 if requesting_response.status_code==401:
                     return redirect('/api/home/')
@@ -204,23 +197,13 @@ def delete_Product(request,pk):
         requesting_response=requests.delete(f"http://127.0.0.1:8000/api/product/{pk}",headers=headers)
         response_in_json=requesting_response.json()
         if requesting_response.status_code==200:
-            requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/",headers=headers)
-            response_in_json=requesting_response.json()
-            if requesting_response.status_code==200:
-                return render(request,'listProduct.html',{'products':response_in_json,'success':"Product deleted successfully!!",'error':False})
-            else:
-                if requesting_response.status_code==401:
-                    return redirect('/api/home/')
-                return render(request,'listProduct.html',{'products':response_in_json,'massage':"Product Not deleted!!",'error':True})
-
+            return redirect('/api/listproduct/?page=1')
         else:
             if requesting_response.status_code==401:
                 return redirect('/api/home/')
             return render(request,'listProduct.html',{'products':response_in_json,'massage':"Product Not deleted!!",'error':True})
     else:
         return redirect('/api/home/')
-
-
 def update_Product(request,pk):
     token=request.session.get('access_token')
     print(pk)
@@ -301,26 +284,18 @@ def products_list_for_user(request):
             return redirect('/api/home/')
         if token:
             headers={'Authorization': f"Bearer {token}"}
-            #decoding the token to extract the userr id :
-            #decode_token=JWT
-            print("............",headers)
             sort_order=request.GET.get('sort')
             page=request.GET.get('page')
             print("sort:",sort_order)
             requesting_response=requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}&page={page}",headers=headers)
-            
             if requesting_response.status_code==200:
                 response_in_json = requesting_response.json()
                 products=response_in_json.get('products')
-             
                 page_number=response_in_json.get('page_number')
                 total_page=response_in_json.get('total_pages')
-                
                 if total_page > page_number:
                     next=page_number+1
                     prev=page_number-1
-                    
-                
                 elif total_page == page_number:
                     # next=page_number+1
                     next=0
@@ -328,12 +303,7 @@ def products_list_for_user(request):
                         prev=page_number-1
                     else:
                         prev=0
-            
-             
-                    
-
-                # print(";;;;;;;;;;;;;",response_in_json,"  prev: ",prev,"  next:",next,"  ",products,";;;;;;;;;;;" )
-                return render(request,'products_list.html',{'products':products,'next':next,'prev':prev,'page_number':page_number})
+                return render(request,'products_list.html',{'products':products,'next':next,'prev':prev,'page_number':page_number,'sort':sort_order})
             else:
                 if requesting_response.status_code==401:
                     return redirect('/api/home/')
