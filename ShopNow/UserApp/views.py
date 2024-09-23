@@ -23,24 +23,23 @@ def register_user(request):
             serialized = WebUserSerializer(data = request.data)
             if serialized.is_valid():
                 serialized.save()
-                return Response(serialized.data,status = status.HTTP_201_CREATED)
+                return Response(serialized.data, status = status.HTTP_201_CREATED)
             else:
                 return Response(f"your data is invalid, {serialized.errors}", status = status.HTTP_400_BAD_REQUEST)
 @api_view(['POST'])
 def login_user(request):
             serialized = LoginSerializer(data = request.data)
-            if serialized.is_valid():    
-                user = authenticate(request, username = serialized.validated_data.get('username'), password=serialized.validated_data.get('password'))
+            if serialized.is_valid():
+                username = serialized.validated_data.get('username')
+                password = serialized.validated_data.get('password')
+                user = authenticate(request, username = username, password = password)
                 if user is not None:
-                    loged_user = Webuser.objects.get(username = serialized.data.get('username'))
-                    print(loged_user)
-                    print(user.id,serialized.data.get('username'))
+                    loged_user = Webuser.objects.get(username = username)
                     logged_user_id = user.id
                     try:
                         cartModel.objects.get(user_of_cart = loged_user)
                     except:
                         try:
-                            print("not coming")
                             cartModel.objects.create(user_of_cart = loged_user)
                         except:
                             return Response("cart is causing some issue")
@@ -48,10 +47,10 @@ def login_user(request):
                     access_token = str(refresh_and_access_token.access_token)
                     refresh_token = str(refresh_and_access_token)
                     response_to_be_send={
-                                        'username':serialized.validated_data.get('username'),
+                                        'username':username,
                                         'access': access_token,
                                         'refresh':refresh_token,
-                                        'logged_user_id':logged_user_id,}
+                                        'logged_user_id':logged_user_id}
                     return Response(response_to_be_send, status = status.HTTP_200_OK)
                 else:
                     return Response("Invalid credentials", status = status.HTTP_404_NOT_FOUND)
@@ -204,7 +203,7 @@ def login_page(request):
                 return redirect("/api/login_user/")
         else:
             try:
-                return render(request,'loginPage.html', {'massage':"NOT login, Please try again!!", 'error':True})
+                return render(request, 'loginPage.html', {'massage':"NOT login, Please try again!!", 'error':True})
             except:
                 return Response({'error': 'Invalid JSON response'}, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
             
@@ -219,6 +218,7 @@ def user_registeration_frontend(request):
         form_data_dict = {
                             'username':form_data.get('username'),
                             'email':form_data.get('email'),
+                            'address':form_data.get('address'),
                             'password':form_data.get('password'),
                             'confirm_password':form_data.get('confirm_password')}
             
@@ -227,8 +227,7 @@ def user_registeration_frontend(request):
             response_to_pass = response_from_api.json()
             return render(request,'registerUser.html', {'massage':"User is Registered Successfully!!"})
         else:
-            response_to_pass = response_from_api.json()
-            return render(request, 'registerUser.html', {'massage':response_to_pass})
+            return render(request, 'registerUser.html', {'massage':"Error: User is not created !!"})
 
 def update_profile(request,pk):
     token = request.session.get('access_token')
@@ -248,6 +247,7 @@ def update_profile(request,pk):
             if pk is not None:
                 data = {'username':request.POST.get('username'),
                         'email':request.POST.get('email'),
+                        'address':request.POST.get('address'),
                         'password':request.POST.get('password'),
                         'confirm_password':request.POST.get('confirm_password')}
                 response_from_api = requests.put(f"http://127.0.0.1:8000/api/user/{pk}", data = data, headers = header)
