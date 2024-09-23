@@ -140,7 +140,7 @@ def showCart(request):
 
             for each_cart in response_in_json:
                 print("Each Cart Item:", each_cart)
-                product_obj=product.objects.get(id=each_cart.get('cart_product'))
+                product_obj=Product.objects.get(id=each_cart.get('cart_product'))
                 product_info.append({'product_obj':product_obj,'quantity':each_cart.get('product_quantity'),
                                      'cart':each_cart.get('cart')})
                 cart_id=each_cart.get('cart')
@@ -170,7 +170,7 @@ def deleteProdFromCart(request,product_id):
 
                 for each_cart in response_in_json:
                     print("Each Cart Item:", each_cart)
-                    product_obj=product.objects.get(id=each_cart.get('cart_product'))
+                    product_obj=Product.objects.get(id=each_cart.get('cart_product'))
                     product_info.append({'product_obj':product_obj,'quantity':each_cart.get('product_quantity'),
                                         'cart':each_cart.get('cart')})
                     cart_id=each_cart.get('cart')

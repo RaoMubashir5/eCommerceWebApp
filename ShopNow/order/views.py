@@ -12,9 +12,6 @@ from rest_framework import status
 
 from rest_framework.response import Response
 from UserApp.models import *
-
-from checkout.serializer import checkoutSerializer
-from checkout.models import checkoutPage
 from Cart.models import cartModel,addToCart
 from UserApp.views import get_user_name
 from rest_framework_simplejwt.authentication import JWTAuthentication

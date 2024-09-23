@@ -3,7 +3,7 @@ from django.db import models
 from UserApp.models import Webuser
 
 from Cart.models import cartModel
-from product.models import product
+from product.models import Product
 # Create your models here.
 
 class order(models.Model):
@@ -13,7 +13,7 @@ class order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(order, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(product, on_delete=models.SET_NULL, null=True)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField() 
     price = models.DecimalField(max_digits=10, decimal_places=2) 
 
