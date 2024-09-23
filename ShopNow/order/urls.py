@@ -1,15 +1,12 @@
 from django.contrib import admin
-from .views import orderApi,userOrders,placeOrder,ordershistory
+from .views import OrderApi,UserOrders,place_order,orders_history
 from django.urls import path
 
-urlpatterns = [path('order/',orderApi.as_view(),name='order'),
-               path('order/<int:pk>',orderApi.as_view(),name='order'),
-               path('all_order/',userOrders.as_view(),name='allorder'),
-               path('user_order/<int:pk>',userOrders.as_view(),name='userorder'),
-
-            #front end paths.
-            path('placeOrder/<int:pk>',placeOrder,name='placeOrder'),
-            path('orderHistory/',ordershistory,name='orderHistory'),
-            path('orderHistory/<int:pk>',ordershistory,name='orderHistory'),
-
-        ]
+urlpatterns = [
+               path('order/', OrderApi.as_view(), name = 'order'),
+               path('order/<int:pk>', OrderApi.as_view(), name = 'order'),
+               path('all_order/', UserOrders.as_view(), name = 'allorder'),
+               path('user_order/<int:pk>', UserOrders.as_view(), name = 'userorder'),
+               path('placeOrder/<int:pk>', place_order, name = 'placeOrder'),
+               path('orderHistory/', orders_history, name = 'orderHistory'),
+               path('orderHistory/<int:pk>', orders_history, name = 'orderHistory')]

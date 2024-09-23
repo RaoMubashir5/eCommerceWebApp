@@ -1,194 +1,130 @@
-from django.shortcuts import render,redirect
-
-# Create your views here.
-
 from rest_framework.views import APIView
-
-from .models import order,OrderItem
-
-from ShopNow.allSerializers.orderSerializer import orderSerializer,orderItemSerializer
-
-from rest_framework import status
-
-from rest_framework.response import Response
-from UserApp.models import *
-from Cart.models import cartModel,addToCart
+from Cart.models import addToCart
+from .customPermissions import CustomizeAPIPermissions
 from UserApp.views import get_user_name
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
-
-from .customPermissions import CustomizeAPIPermissions
-
-from .orderHistoryPermissions import orderHistoryPermissions
-
+from .models import Order
+from .models import OrderItem
+from ShopNow.allSerializers.orderSerializer import OrderSerializer
+from ShopNow.allSerializers.orderSerializer import OrderItemSerializer
+from django.shortcuts import render
+from django.shortcuts import redirect
+from rest_framework import status
+from rest_framework.response import Response
+from UserApp.models import *
+from .orderHistoryPermissions import OrderHistoryPermissions
 import requests
 
-class orderApi(APIView):
-    authentication_classes=[JWTAuthentication]
-    permission_classes=[CustomizeAPIPermissions]
-    def get(self,request,pk=None):
+class OrderApi(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [CustomizeAPIPermissions]
+
+    def get(self, request, pk = None):
         if pk is None:
-            order_history=order.objects.all()
+            order_history = Order.objects.all()
             if order_history:
-                print("order history of ",order_history)
-                # checkout_info_obj=
-                # serialized_checkout_info=checkoutSerializer()
-                serialized_order=orderSerializer(order_history,many=True)
-                # response_to_send={'serialized_checkout_info':serialized_checkout_info,
-                return Response(serialized_order.data,status=status.HTTP_200_OK)
+                serialized_order = OrderSerializer(order_history,many = True)
+                return Response(serialized_order.data,status = status.HTTP_200_OK)
             else:
-                print("No............Orders")
-                return Response({'response':"You hav'nt ordered yet!!"},status=status.HTTP_400_BAD_REQUEST)
+                return Response({'response': "You hav'nt ordered yet!!"}, status = status.HTTP_400_BAD_REQUEST)
         else:
             try:
-                order_history_instance=order.objects.get(id=pk)
+                order_history_instance = Order.objects.get(id = pk)
             except:
-                return Response("There isno such Order with this order ID.",status=status.HTTP_400_BAD_REQUEST)
-            self.check_object_permissions(request,order_history_instance)
-                # user_Who_ordered=order_history_instance.ordered_by_user
-
-        
-            order_items=order_history_instance.items #it returns the related manager that works as queryset on iteration.
-            print("Order items",order_items)
-            
+                return Response("There isno such Order with this order ID.", status = status.HTTP_400_BAD_REQUEST)
+            self.check_object_permissions(request, order_history_instance)       
+            order_items = order_history_instance.items
             try:
-                serialized_items=orderItemSerializer(order_items,many=True)
+                serialized_items = OrderItemSerializer(order_items, many = True)
             except:
-                return Response("Issue witht the Items serailizer",status=status.HTTP_204_NO_CONTENT) 
-            serialized_order=orderSerializer(order_history_instance)
-            print("Order ",serialized_order.data)
-            response_to_send={'Cart_items':serialized_items.data,'Order_Details':serialized_order.data, }
-            print("response ",response_to_send)
-            return Response(response_to_send,status=status.HTTP_200_OK)               
-            
-                 
-                  
-       # return Response("your request is empty.",status=status.HTTP_400_BAD_REQUEST)
+                return Response("Issue witht the Items serailizer", status = status.HTTP_204_NO_CONTENT) 
+            serialized_order = OrderSerializer(order_history_instance)
+            response_to_send = {'Cart_items': serialized_items.data, 'Order_Details': serialized_order.data}
+            return Response(response_to_send, status = status.HTTP_200_OK)     
     
-    def post(self,request,pk):
-        #if request.data:
-            requesting_user=request.user
-
-            request_dict=request.data
-            print("yahantak ok ha",request_dict)
-            cart_id=pk #Cart id
-            
-            print("0222 yahan tak ok ha",cart_id,type(cart_id),cart_id)
-                          
-            added_cart_obj=addToCart.objects.filter(cart=cart_id)
-          
-            #adding the param data into the request.data
-            request_dict['ordered_by_user']=requesting_user.id
-            request_dict['total_bill']=50
-            print("03 yahantak ok ha",request_dict)
-            serialized=orderSerializer(data=request_dict)
-            print("044 yahantak ok ha",request_dict)
+    def post(self, request, pk):
+            requesting_user = request.user
+            request_dict = request.data
+            cart_id = pk                          
+            added_cart_obj = addToCart.objects.filter(cart = cart_id)
+            request_dict['ordered_by_user'] = requesting_user.id
+            request_dict['total_bill'] = 50
+            serialized = OrderSerializer(data = request_dict)
             if serialized.is_valid():
-                print(serialized.errors)
-                order_instance=serialized.save()
-                Total_bill=0
+                order_instance = serialized.save()
+                Total_bill = 0
                 for cart in added_cart_obj:
-                    OrderItem.objects.create(order=order_instance,product=cart.cart_product,quantity=cart.product_quantity,
-                                             price=cart.cart_product.price)
-                    Total_bill=Total_bill+(cart.cart_product.price * cart.product_quantity)
-                order_instance.total_bill=Total_bill
+                    OrderItem.objects.create(order = order_instance, product = cart.cart_product,
+                                             quantity = cart.product_quantity, price = cart.cart_product.price)
+                    Total_bill = Total_bill + (cart.cart_product.price * cart.product_quantity)
+                order_instance.total_bill = Total_bill
                 order_instance.save()  
-                return Response("Your Order has been placed!!",status=status.HTTP_201_CREATED)
+                return Response("Your Order has been placed!!", status = status.HTTP_201_CREATED)
             else:
-                print("Errors")
                 return Response(serialized.errors,status=status.HTTP_400_BAD_REQUEST)
-                  
-        #return Response("your request is empty.",status=status.HTTP_400_BAD_REQUEST)
+    
+class UserOrders(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [OrderHistoryPermissions]
 
-        
-
-
-class userOrders(APIView):
-    authentication_classes=[JWTAuthentication]
-    permission_classes=[orderHistoryPermissions]
-    def get(self,request,pk=None):
-       
+    def get(self, request, pk = None):
         if pk is None:
-            order_history=order.objects.all()
+            order_history = Order.objects.all()
             if order_history:
-                serialized=orderSerializer(order_history,many=True)
-                return Response(serialized.data,status=status.HTTP_200_OK)
-            
-            print("invlaid data")
-            return Response(f"There are no orders placed yet!!{pk}",status=status.HTTP_400_BAD_REQUEST)
+                serialized = OrderSerializer(order_history, many = True)
+                return Response(serialized.data,status=status.HTTP_200_OK) 
+            return Response(f"There are no orders placed yet!!{pk}", status = status.HTTP_400_BAD_REQUEST)
         else:
-            user_who_order=Webuser.objects.get(id=pk)
-            print("user_who_order :",user_who_order)
-            self.check_object_permissions(request,user_who_order)
-            order_history=user_who_order.user_orders.all()
+            user_who_order = Webuser.objects.get(id = pk)
+            self.check_object_permissions(request, user_who_order)
+            order_history = user_who_order.user_orders.all()
             if order_history:
-                serialized=orderSerializer(order_history,many=True)
-                return Response(serialized.data,status=status.HTTP_200_OK)
-            print("No orders",order_history)
-            return Response("You hav'nt ordered yet!!",status=status.HTTP_204_NO_CONTENT)
+                serialized = OrderSerializer(order_history, many = True)
+                return Response(serialized.data,status = status.HTTP_200_OK)
+            return Response("You hav'nt ordered yet!!", status = status.HTTP_204_NO_CONTENT)
 
-
-
-def placeOrder(request,pk):
+def place_order(request,pk):
     token=request.session.get('access_token')
     if token and request.user.is_authenticated:
-        headers={'Authorization': f"Bearer {token}"}
-        requesting_response=requests.post(f"http://127.0.0.1:8000/api/order/{pk}",headers=headers)
-        
-        if requesting_response.status_code==201:
-            cart_instances=addToCart.objects.filter(cart=pk)
-            reset_cart=cart_instances.delete()
-            print("Successfully reseted the cart",reset_cart)
-            response_in_json=requesting_response.json()
+        headers = {'Authorization': f"Bearer {token}"}
+        requesting_response = requests.post(f"http://127.0.0.1:8000/api/order/{pk}", headers = headers)
+        if requesting_response.status_code == 201:
+            cart_instances = addToCart.objects.filter(cart = pk)
+            reset_cart = cart_instances.delete()
+            response_in_json = requesting_response.json()
             product_info = []
-
-            # for each_cart in response_in_json:
-                # print("Each Cart Item:", each_cart)
-                # product_obj=product.objects.get(id=each_cart.get('cart_product'))
-                # product_info.append({'product_obj':product_obj,'quantity':each_cart.get('product_quantity'),
-                #                      'cart':each_cart.get('cart')})
-            return render(request,'your_Cart.html',{'empty':True,'product_info':product_info,'massage':response_in_json})
-        
+            return render(request, 'your_Cart.html', {'empty': True, 'product_info': product_info, 'massage': response_in_json})
         else:
-            if requesting_response.status_code==401:
+            if requesting_response.status_code == 401:
                 return redirect('/api/home/')
-            
-            return render(request,'your_Cart.html',{'empty':True,'massage':"Order not placed some errors there"})
-
-
-def ordershistory(request,pk=None):
-        print("Is user is super user:",request.user.is_superuser)
-        token=request.session.get('access_token')
+            return render(request, 'your_Cart.html', {'empty': True, 'massage': "Order not placed some errors there"})
+ 
+def orders_history(request, pk = None):
+        token = request.session.get('access_token')
         if token :
-
-            headers={'Authorization': f"Bearer {token}"}
+            headers = {'Authorization': f"Bearer {token}"}
             if pk is None:
-                requesting_response=requests.get(f"http://127.0.0.1:8000/api/order/",headers=headers)
-                if requesting_response.status_code==200:
-                    response_in_json=requesting_response.json()
-                    
-                    return render(request,'orderHistory.html',{'orders':response_in_json})
+                requesting_response = requests.get(f"http://127.0.0.1:8000/api/order/", headers = headers)
+                if requesting_response.status_code == 200:
+                    response_in_json = requesting_response.json()
+                    return render(request, 'orderHistory.html', {'orders': response_in_json})
                 else: 
-                    if requesting_response.status_code==401:
+                    if requesting_response.status_code == 401:
                         return redirect('/api/home/')
-                    
-                    return render(request,'orderHistory.html',{'erorr':"There are no orders to show."})
+                    return render(request, 'orderHistory.html', {'erorr': "There are no orders to show."})
             else:
-                requesting_response=requests.get(f"http://127.0.0.1:8000/api/order/{pk}",headers=headers)
-                if requesting_response.status_code==200:
-                    response_in_json=requesting_response.json()
-                    print(response_in_json.get('Order_Details'))
-                    orders=response_in_json.get('Order_Details')
-                    
-                    user_who_ordered=get_user_name(orders.get('id'),headers)
-                    total_bill=orders.get('total_bill')
-                    print("username function returns:",user_who_ordered)
-                    return render(request,'orderedItems.html',{'orders':user_who_ordered,'total_bill':total_bill,
-                                                               'Items_details':response_in_json.get('Cart_items')})
+                requesting_response = requests.get(f"http://127.0.0.1:8000/api/order/{pk}", headers = headers)
+                if requesting_response.status_code == 200:
+                    response_in_json = requesting_response.json()
+                    orders = response_in_json.get('Order_Details')
+                    user_who_ordered = get_user_name(orders.get('ordered_by_user'), headers)
+                    total_bill = orders.get('total_bill')
+                    return render(request, 'orderedItems.html', {'orders': user_who_ordered, 'total_bill': total_bill,
+                                                               'Items_details': response_in_json.get('Cart_items')})
                 else: 
-                    if requesting_response.status_code==401:
+                    if requesting_response.status_code == 401:
                         return redirect('/api/home/')
-                    return render(request,'orderedItems.html',{'massage':"No details available."})
+                    return render(request, 'orderedItems.html', {'massage': "No details available."})
         else:
             return redirect('/api/home/')
 
