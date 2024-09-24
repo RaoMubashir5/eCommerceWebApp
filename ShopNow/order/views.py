@@ -23,15 +23,15 @@ class OrderApi(APIView):
         if pk is None:
             order_history = Order.objects.all()
             if order_history:
-                serialized_order = OrderSerializer(order_history,many = True)
-                return Response(serialized_order.data,status = status.HTTP_200_OK)
+                serialized_order = OrderSerializer(order_history, many = True)
+                return Response(serialized_order.data, status = status.HTTP_200_OK)
             else:
                 return Response({'response': "You hav'nt ordered yet!!"}, status = status.HTTP_400_BAD_REQUEST)
         else:
             try:
                 order_history_instance = Order.objects.get(id = pk)
             except:
-                return Response("There isno such Order with this order ID.", status = status.HTTP_400_BAD_REQUEST)
+                return Response("There is no such Order with this order ID.", status = status.HTTP_400_BAD_REQUEST)
             self.check_object_permissions(request, order_history_instance)       
             order_items = order_history_instance.items
             try:
@@ -84,7 +84,7 @@ class UserOrders(APIView):
             return Response("You hav'nt ordered yet!!", status = status.HTTP_204_NO_CONTENT)
 
 def place_order(request,pk):
-    token=request.session.get('access_token')
+    token = request.session.get('access_token')
     if token and request.user.is_authenticated:
         headers = {'Authorization': f"Bearer {token}"}
         requesting_response = requests.post(f"http://127.0.0.1:8000/api/order/{pk}", headers = headers)
