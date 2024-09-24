@@ -208,18 +208,11 @@ def update_Product(request, pk):
             else:
                 requesting_response = requests.put(f"http://127.0.0.1:8000/api/product/{pk}", data = data, files = files, headers = headers)
             if requesting_response.status_code == 200:
-                requesting_response = requests.get(f"http://127.0.0.1:8000/api/product/", headers = headers)
-                response_in_json = requesting_response.json()
-                if requesting_response.status_code == 200:
-                    return render(request, 'listProduct.html', {'products': response_in_json, 'success': "Product Updated successfully!!", 'error': False})
-                else:
-                    if requesting_response.status_code == 401:
-                        return redirect('/api/home/')
-                    return render(request, 'listProduct.html', {'products': response_in_json, 'massage': "Product Not updated!!", 'error': True})
+                    return redirect('/api/listproduct/?page=1')
             else:
                 if requesting_response.status_code == 401:
                     return redirect('/api/home/')
-                return render(request, 'updateProduct.html', {'massage': f"Product Not updated!!{response_in_json} .", 'error': True})
+                return render(request, 'updateProduct.html', {'massage': f"Product Not updated!!.", 'error': True})
         else:
             return redirect('/api/home/')
 
