@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from Cart.models import addToCart
+from Cart.models import AddToCart
 from .customPermissions import CustomizeAPIPermissions
 from UserApp.views import get_user_name
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -46,7 +46,7 @@ class OrderApi(APIView):
             requesting_user = request.user
             request_dict = request.data
             cart_id = pk                          
-            added_cart_obj = addToCart.objects.filter(cart = cart_id)
+            added_cart_obj = AddToCart.objects.filter(cart = cart_id)
             request_dict['ordered_by_user'] = requesting_user.id
             request_dict['total_bill'] = 50
             serialized = OrderSerializer(data = request_dict)
@@ -89,7 +89,7 @@ def place_order(request,pk):
         headers = {'Authorization': f"Bearer {token}"}
         requesting_response = requests.post(f"http://127.0.0.1:8000/api/order/{pk}", headers = headers)
         if requesting_response.status_code == 201:
-            cart_instances = addToCart.objects.filter(cart = pk)
+            cart_instances = AddToCart.objects.filter(cart = pk)
             reset_cart = cart_instances.delete()
             response_in_json = requesting_response.json()
             product_info = []

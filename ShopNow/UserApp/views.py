@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
 from product.templates import*
-from Cart.models import cartModel
+from Cart.models import CartModel
 from UserApp.customPermissions import CustomizeAPIPermissions
 from django.http import HttpResponse
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -37,10 +37,10 @@ def login_user(request):
                     loged_user = Webuser.objects.get(username = username)
                     logged_user_id = user.id
                     try:
-                        cartModel.objects.get(user_of_cart = loged_user)
+                        CartModel.objects.get(user_of_cart = loged_user)
                     except:
                         try:
-                            cartModel.objects.create(user_of_cart = loged_user)
+                            CartModel.objects.create(user_of_cart = loged_user)
                         except:
                             return Response("cart is causing some issue")
                     refresh_and_access_token = RefreshToken.for_user(user)
