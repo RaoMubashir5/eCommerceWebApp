@@ -1,7 +1,6 @@
 from .models import AddToCart
 from rest_framework.views import APIView
 from ShopNow.allSerializers.cartSerializer import AddToCartSerializer
-from ShopNow.allSerializers.cartSerializer import CartSerializer
 from .customPermissions import CustomizeAPIPermissions
 from .models import CartModel
 from rest_framework_simplejwt.authentication import JWTAuthentication

@@ -3,8 +3,8 @@ from django.urls import path
 from django.urls import include
 from django.conf import settings
 from django.conf.urls.static import static
-from UserApp.views import * 
-from product.views import *  
+from UserApp.Backend.views import * 
+from product.Backend.views import *  
 from Cart.views import *
 from order.views import *
 urlpatterns = [
