@@ -141,3 +141,14 @@ MEDIA_ROOT=BASE_DIR / 'media'
 
 MEDIA_URL='/media/' #it would be like /media/boss.jpg
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+#sending email backend:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com' #it could be yahoo or hotmail
+EMAIL_PORT = 587  #it is a port number of google mail
+EMAIL_USE_TLS = True #transmission layer security is true
+EMAIL_HOST_USER = 'djangorest45@gmail.com'  #it is the email of sender but actually the app mail added to the gmail
+EMAIL_HOST_PASSWORD = 'vfdi ergi fmfv rwkr'  #it is the password that is App password in gmail.
+DEFAULT_FROM_EMAIL = 'djangorest45@gmail.com'  #it is the again the sender email, default one.
+
+

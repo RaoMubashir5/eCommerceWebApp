@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from UserApp.models import Webuser
+from django.core.mail import send_mail
+from django.conf import settings
 
 class WebUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only = ['password'], required = True)
@@ -18,6 +20,7 @@ class WebUserSerializer(serializers.ModelSerializer):
         user.save()
         user.created_by = user 
         user.save()
+        email_sending_function(username, useremail)
         return user
     
     def update(self, instance, validated_data):
@@ -34,6 +37,13 @@ class WebUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Your confirming password is not matching!!')
         else:
              return data
+    
+def email_sending_function(username, useremail):
+    subject = 'Welcome to Tutlee'
+    message = f'Hi {username},\n\nThank you for registering with us. We are excited to have you on board!'
+    email_from = settings.DEFAULT_FROM_EMAIL  # Set the sender's email
+    recipient_list = [useremail]  # Send email to the registered user's email
+    send_mail(subject, message, email_from, recipient_list, fail_silently=False)
         
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required = True)
