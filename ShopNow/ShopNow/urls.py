@@ -6,7 +6,8 @@ from django.conf.urls.static import static
 from UserApp.Backend.views import * 
 from product.Backend.views import *  
 from Cart.views import *
-from order.views import *
+from order.Backend.views import *
+
 urlpatterns = [
                 path('admin/', admin.site.urls),
                 path('api/', include('UserApp.urls')),
