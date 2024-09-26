@@ -5,6 +5,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect
 from rest_framework import status
+from ShopNow.allSerializers.Userserializers import email_sending_function
 from django.views import View
 import requests
 
@@ -41,7 +42,6 @@ class SingleUserDetails(View):
             if user_identity:
                 context['admin'] = True
             return render(request, 'users.html', context)
-
         order_history = response_from_order.json()
         user_identity = request.GET.get('admin')
         context = {
@@ -104,18 +104,14 @@ def googleLogin(request):
         'username': username,
         'id': id,
     }
-    print(data)
     if not authenticated_user:
         return redirect('/api/home/')
     response_from_api = requests.post("http://127.0.0.1:8000/api/tokenizeGoogle/", data = data)
     if response_from_api.status_code != 200:
         return redirect('/api/home/')
-    print(request)
     response_to_pass = response_from_api.json()
     token = response_to_pass.get('access')
     user_id = response_to_pass.get('logged_user_id')
-    # user.created_by = user  # Consider what 'created_by' signifies; adjust accordingly
-    # user.save()
     login_user =login(request, user, backend='social_core.backends.google.GoogleOAuth2')
     request.session['access_token'] = token
     request.session['user_id'] = user_id
@@ -123,6 +119,7 @@ def googleLogin(request):
     if not request_token:
         print("Token is not included", token, request_token)
         return redirect('/api/register_new/')
+    email_sending_function(username, email)
     print("Login to home")
     return redirect('/api/home/')  
     
