@@ -44,7 +44,16 @@ INSTALLED_APPS = [
     'product',
     'order',
     'checkout',
+    'django.contrib.sites', #for site management
+    'social_django',  #for social login
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
+
+# Add the site ID setting for social authentication
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+     'allauth.account.middleware.AccountMiddleware',  # Add this line
 ]
 
 ROOT_URLCONF = 'ShopNow.urls'
@@ -151,4 +161,14 @@ EMAIL_HOST_USER = 'djangorest45@gmail.com'  #it is the email of sender but actua
 EMAIL_HOST_PASSWORD = 'vfdi ergi fmfv rwkr'  #it is the password that is App password in gmail.
 DEFAULT_FROM_EMAIL = 'djangorest45@gmail.com'  #it is the again the sender email, default one.
 
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',  # Google OAuth2 backend
+    'django.contrib.auth.backends.ModelBackend',  # Default Django backend
+)
 
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '1088811793728-7k9mrud0e8bog14i5cv985imm6m9p9e4.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+LOGIN_REDIRECT_URL = '/api/googleLogin/'  # Redirect after successful Google login
+LOGOUT_REDIRECT_URL = '/api/home/'        # Redirect after logging out
+LOGIN_URL = '/accounts/google/login/'     # URL for Google login

@@ -1,9 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.views import TokenVerifyView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from UserApp.Backend.views import *
 from UserApp.FrontEnd.views import *
+from django.contrib.auth.views import LogoutView
 
 urlpatterns=[
     path('register/', register_user,name = 'registerUser'),
@@ -15,6 +16,11 @@ urlpatterns=[
     path('userDetail/<int:pk>', GetSingleUser.as_view(), name = 'userDetail'),
     path('updateUser/<int:pk>', UpdateUser.as_view(), name = 'updateUser'),
     path('DeleteUser/<int:pk>', DeleteUser.as_view(), name = 'DeleteUser'),
+    path('logout/', LogoutView.as_view(), name='logout'), 
+    path('auth/', include('social_django.urls', namespace='social')),  # URL for social auth
+    path('tokenizeGoogle/', google_login, name = "tokenizeGoogle"),
+
+
 
     #Front end paths
     path('home/', home, name = 'home'),  
@@ -26,4 +32,5 @@ urlpatterns=[
     path('delete/<pk>', delete_user, name = 'delete'),   
     path('admin/', admin_login, name = 'admin'),  
     path('admin_options/', admin_options, name = 'admin_options'),
+    path('googleLogin/', googleLogin, name='googleLogin'),
 ]
