@@ -18,5 +18,5 @@ class CartModel(models.Model):
     cart_product = models.ManyToManyField(Product, through = AddToCart)
 
     def __str__(self):
-        return f"Cart:{self.id}:{self.user_of_cart} ."
+        return f"Cart:{self.id}: {self.user_of_cart} ."
 

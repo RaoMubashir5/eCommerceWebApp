@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from UserApp.Backend.views import * 
 from product.Backend.views import *  
-from Cart.views import *
+from Cart.Backend.views import *
 from order.Backend.views import *
 
 urlpatterns = [
