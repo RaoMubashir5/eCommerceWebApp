@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <header style="background-color: rgb(6, 139, 51);height: 7vh;font-weight: bolder;
+                       display: flex;justify-content: center;align-items: center;">Login User</header>
+    <div style="display: flex; justify-content: center;">
+        <div style="box-shadow: 7px 4px 10px rgba(5, 5, 5, 0);padding: 20px; border-radius: 8px; background-color: #20afb4; width: 800px;height: 75vh;">
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="uname">Please Enter UserName:</label>
+              <input type="text" name="username" required placeholder="username" id="uname" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="exampleInputPassword1">Password</label>
+              <input type="password" class="form-control" id="exampleInputPassword1" name="password">
+            </div>
+            <div class="form-group form-check">
+              <input type="checkbox" class="form-check-input" id="exampleCheck1">
+              <label class="form-check-label" for="exampleCheck1">Check me out</label>
+            </div>
+            <button type="button" class="btn btn-primary btn-block" onclick="window.location.href='/api/home/'">Home</button>
+            <button type="submit" class="btn btn-primary btn-block">Submit</button>
+      
+            {% if error is True %}
+            <hr>
+            <p>Error Message: {{massage}}</p>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+      <footer style="background-color: rgb(18, 78, 2);height: 7vh;font-weight:bolder;position: fixed;bottom: 0;
+                  width: 100%;z-index: 1000; display: flex;justify-content: center;align-items: center;">ShopNow Axim</footer>
+
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap JS (optional, for any Bootstrap components that require JS like modals) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <title>Home</title>
+    
+    <style>
+        body {
+            padding-top: 56px; /* Space for fixed navbar */
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item a {
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-item a:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        footer {
+            background-color: rgb(18, 78, 2);
+            height: 60px; 
+            font-weight: bolder; 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            z-index: 1000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            color: white;
+        }
+
+        .navbar-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .navbar-nav .nav-link {
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <a class="navbar-brand" href="#">ShopNow Axim</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <a class="nav-item nav-link active" href="/api/register_new/">Sign Up</a>
+        <a class="nav-item nav-link" href="/api/login_user/">Login</a>
+        {% if viewCart is True %}
+        <a class="nav-item nav-link" href="/api/single_user/{{user_id}}">User Profile</a>
+        <a class="nav-item nav-link" href="/api/admin/">Admin</a>
+        <a class="nav-item nav-link" href="/api/products_list_user/?page=1">Do Shopping</a>
+        <a class="nav-item nav-link" href="/api/showCart/">Your Cart</a>
+      </div>
+      <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+    {% endif %}
+    </div>
+</nav>
+<p>{{request.username}}</p>
+<p>{{request.useremail}}</p>
+<p>{{request.id}}</p>
+<footer>
+    ShopNow Axim
+</footer>
+
+</body>
+</html>

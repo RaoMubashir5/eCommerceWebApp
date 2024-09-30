@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,8 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'UserApp',
+    'Cart',
     'product',
+    'order',
 ]
+
+# Add the site ID setting for social authenticatio
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,7 +62,12 @@ ROOT_URLCONF = 'ShopNow.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+                os.path.join(BASE_DIR, 'UserApp', 'FrontEnd', 'templates'),
+                os.path.join(BASE_DIR, 'product', 'Frontend', 'templates'),
+                os.path.join(BASE_DIR, 'Cart', 'FrontEnd', 'templates'),
+                os.path.join(BASE_DIR, 'order', 'Frontend', 'templates'),
+                ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -131,3 +141,14 @@ MEDIA_ROOT=BASE_DIR / 'media'
 #specified in the model with like: media/myImage 
 
 MEDIA_URL='/media/' #it would be like /media/boss.jpg
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+#sending email backend:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com' #it could be yahoo or hotmail
+EMAIL_PORT = 587  #it is a port number of google mail
+EMAIL_USE_TLS = True #transmission layer security is true
+EMAIL_HOST_USER = 'djangorest45@gmail.com'  #it is the email of sender but actually the app mail added to the gmail
+EMAIL_HOST_PASSWORD = 'vfdi ergi fmfv rwkr'  #it is the password that is App password in gmail.
+DEFAULT_FROM_EMAIL = 'djangorest45@gmail.com'  #it is the again the sender email, default one.
+
