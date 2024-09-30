@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from UserApp.models import *
 from ..orderHistoryPermissions import OrderHistoryPermissions
 import requests
+from product.models import *
 
 class GetAllOrderApi(APIView):
     authentication_classes = [JWTAuthentication]
@@ -38,12 +39,21 @@ class GetOrderApi(APIView):
                 return Response({"output": "There is no such Order with this order ID."}, status = status.HTTP_400_BAD_REQUEST)
             self.check_object_permissions(request, order_history_instance)       
             order_items = order_history_instance.items
+            modified_items = []
             try:
                 serialized_items = OrderItemSerializer(order_items, many = True)
+                for item in serialized_items.data:
+                    copy_item = item.copy()
+                    product_obj = Product.objects.filter(id = copy_item['product'])
+                    if not product_obj.exists():
+                        copy_item['product_name'] = "Not Available"
+                    else:
+                        copy_item['product_name'] = product_obj[0].product_name
+                    modified_items.append(copy_item)
             except:
                 return Response("Issue with the Items serailizer", status = status.HTTP_204_NO_CONTENT) 
             serialized_order = OrderSerializer(order_history_instance)
-            response_to_send = {'Cart_items': serialized_items.data, 'Order_Details': serialized_order.data}
+            response_to_send = {'Cart_items': modified_items, 'Order_Details': serialized_order.data}
             return Response(response_to_send, status = status.HTTP_200_OK)     
 
 class AddOrderApi(APIView):

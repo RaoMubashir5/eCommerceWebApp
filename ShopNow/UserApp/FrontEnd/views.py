@@ -88,40 +88,6 @@ def home(request):
         user_who_requested=request.user
         return render(request, 'home.html', {'user_id': user_id, 'user': user_who_requested, 'viewCart': True})
     return render(request, 'home.html')
-
-# Redirect here after successful Google login
-@login_required
-def googleLogin(request):
-    
-    authenticated_user = request.user.is_authenticated
-    username = request.user.username
-    email = request.user.email
-    user = request.user
-    id = request.user.id
-    data = {
-        'user': user,
-        'email': email,
-        'username': username,
-        'id': id,
-    }
-    if not authenticated_user:
-        return redirect('/api/home/')
-    response_from_api = requests.post("http://127.0.0.1:8000/api/tokenizeGoogle/", data = data)
-    if response_from_api.status_code != 200:
-        return redirect('/api/home/')
-    response_to_pass = response_from_api.json()
-    token = response_to_pass.get('access')
-    user_id = response_to_pass.get('logged_user_id')
-    login_user =login(request, user, backend='social_core.backends.google.GoogleOAuth2')
-    request.session['access_token'] = token
-    request.session['user_id'] = user_id
-    request_token = request.session.get('access_token')
-    if not request_token:
-        print("Token is not included", token, request_token)
-        return redirect('/api/register_new/')
-    email_sending_function(username, email)
-    print("Login to home")
-    return redirect('/api/home/')  
     
 def login_page(request):
     if request.method == 'GET':

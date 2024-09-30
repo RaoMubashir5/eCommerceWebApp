@@ -35,6 +35,9 @@ class GetProducts(APIView):
                     products = Product.objects.all().order_by('-price')
             else:
                 products = Product.objects.all()
+
+            if not products.exists():
+                return Response(status = status.HTTP_204_NO_CONTENT)
             products_per_pages = 3
             total_products = products.count()
             total_pages = math.ceil(total_products/products_per_pages)

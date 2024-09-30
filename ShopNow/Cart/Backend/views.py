@@ -16,14 +16,13 @@ class GetCartView(APIView):
     def get(self, request):
             owner_cart_user = request.user
             cartobj = CartModel.objects.get(user_of_cart = owner_cart_user)
-            if cartobj:
-                all_cart_items = cartobj.products_inThisCart.all()
-                if all_cart_items.exists():
-                    serialized = AddToCartSerializer(all_cart_items, many = True)
-                    return Response(serialized.data, status = status.HTTP_200_OK)
-                return Response("you have nothing in your Cart", status = status.HTTP_204_NO_CONTENT)
-            else:
+            if not cartobj:
                 return Response("your Cart is not exists", status = status.HTTP_204_NO_CONTENT)
+            all_cart_items = cartobj.products_inThisCart.all()
+            if all_cart_items.exists():
+                serialized = AddToCartSerializer(all_cart_items, many = True)
+                return Response(serialized.data, status = status.HTTP_200_OK)
+            return Response("you have nothing in your Cart", status = status.HTTP_204_NO_CONTENT)
     
 class AddCartView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -36,39 +35,35 @@ class AddCartView(APIView):
         product_quantity = request.data.get('product_quantity', 1)
         cart = CartModel.objects.get(id = cart_id.id)
         data['cart'] =  cart.id
-        print(data)
         product = AddToCart.objects.filter(cart = cart, cart_product = cart_product_id).first()
         if not product:
             serialized = AddToCartSerializer(data = data, many = False)
-            if serialized.is_valid():
-                serialized.save()
-                return Response(serialized.data, status = status.HTTP_201_CREATED)
-            else:
+            if not serialized.is_valid():
                 return Response({"Errors": f"Request data is not valid, {serialized.errors} ."}, status = status.HTTP_400_BAD_REQUEST)
+            serialized.save()
+            return Response(serialized.data, status = status.HTTP_201_CREATED)
         product.product_quantity += 1
         product.save()
         serialized = AddToCartSerializer(product)
         return Response(serialized.data, status = status.HTTP_200_OK)                
-
+    
 class DeleteCartView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [CustomizeAPIPermissions]
-
+    
     def delete(self, request, product_id):
         owner_cart_user = request.user
         cartobj = CartModel.objects.get(user_of_cart = owner_cart_user)
-        if cartobj and product_id is  not None:
-            all_cart_items = cartobj.products_inThisCart.all()
-            try:
-                if all_cart_items.get(cart_product = product_id):
-                    instance = cartobj.products_inThisCart.get(cart_product = product_id)
-                else:
-                    return Response("this product is not in Cart")
-                self.check_object_permissions(request, instance)
-                instance.delete()
-                return Response("Deleted successfully!!", status = status.HTTP_200_OK)     
-            except:
-                return Response("Product is not in the Cart!!",status = status.HTTP_204_NO_CONTENT)                   
-        else:
+        if not cartobj or product_id is None:
             return Response(status = status.HTTP_400_BAD_REQUEST) 
+        all_cart_items = cartobj.products_inThisCart.all()
+        try: 
+            if (all_cart_items.get(cart_product = product_id)):
+                instance = cartobj.products_inThisCart.get(cart_product = product_id)
+        except:
+            return Response(status = status.HTTP_204_NO_CONTENT)
+        self.check_object_permissions(request, instance)
+        instance.delete()
+        return Response("Deleted successfully!!", status = status.HTTP_200_OK)     
+ 
  

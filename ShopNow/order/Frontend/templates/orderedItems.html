@@ -40,11 +40,11 @@
                 <tbody>
                     {% for item in Items_details %}
                     <tr>
-                        <td>{{item.order}}</td> 
-                        <td>{{ item.product }}</td>
+                        <td>{{ item.order }}</td> 
+                        <td>{{ item.product_name }}</td>
                         <td>{{ item.price }}</td>
                         <td>{{ item.quantity }}</td>
-                        </tr>
+                    </tr>
                     {% endfor %}
                    
                     </tr>
@@ -53,8 +53,6 @@
                         <td> {{total_bill}}</td>
                     </tr>
                 </tbody>
-              
-   
             </table>
         {% else %}
             <p>{{massage}}</p>

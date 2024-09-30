@@ -6,28 +6,30 @@ import requests
 
 class ListProducts(View):
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, ** kwargs):
         token = request.session.get('access_token')
         pk = kwargs.get('pk')
-        if token:
-            headers = {'Authorization': f"Bearer {token}"}
-            sort_order = request.GET.get('sort')
-            page = request.GET.get('page')
-            requesting_response = requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}&page={page}", headers = headers)
-            if requesting_response.status_code == 200:
-                response_in_json = requesting_response.json()
-                products = response_in_json.get('products')
-                page_number = response_in_json.get('page_number')
-                total_page = response_in_json.get('total_pages')
-                prev, next = update_next_previous(total_page, page_number)
-                return render(request, 'listProduct.html', {'products':products, 'next':next, 'prev':prev,
-                                                            'page_number':page_number, 'sort':sort_order})
-            else:
-                if requesting_response.status_code == 401:
-                    return redirect('/api/home/')
-                return redirect('/api/listproduct/')
-        else:
+        if not token:
             return redirect('/api/home/')
+        headers = {'Authorization': f"Bearer {token}"}
+        sort_order = request.GET.get('sort')
+        page = request.GET.get('page')
+        requesting_response = requests.get(f"http://127.0.0.1:8000/api/product/?sort_order={sort_order}&page={page}", headers = headers)
+        if requesting_response.status_code != 200:
+            if requesting_response.status_code == 401:
+                return redirect('/api/home/')
+            if requesting_response.status_code == 204:
+                massage = "No Products Availble"
+                return render(request, 'listProduct.html', {'error': True,'message': massage})
+            return redirect('/api/admin_options/')
+
+        response_in_json = requesting_response.json()
+        products = response_in_json.get('products')
+        page_number = response_in_json.get('page_number')
+        total_page = response_in_json.get('total_pages')
+        prev, next = update_next_previous(total_page, page_number)
+        return render(request, 'listProduct.html', {'products':products, 'next':next, 'prev':prev,
+                                                    'page_number':page_number, 'sort':sort_order})
 
 def search(request):
         token = request.session.get('access_token')
@@ -154,10 +156,15 @@ def products_list_for_user(request):
         if requesting_response.status_code != 200:
             if requesting_response.status_code == 401:
                 return redirect('/api/home/')
+            if requesting_response.status_code == 204:
+                massage = "No Products Availble"
+                return render(request, 'products_list.html', {'error': True,'message': massage})
         response_in_json = requesting_response.json()
         products = response_in_json.get('products')
         page_number = response_in_json.get('page_number')
         total_page = response_in_json.get('total_pages')
+        if total_page > 0:
+            pass
         prev, next = update_next_previous(total_page, page_number)
         return render(request, 'products_list.html', {'products': products,'next': next,
                                'prev': prev, 'page_number': page_number, 'sort': sort_order})

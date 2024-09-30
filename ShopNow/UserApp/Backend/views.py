@@ -45,29 +45,6 @@ def login_user(request):
                     return Response("Invalid credentials", status = status.HTTP_404_NOT_FOUND)
             else: 
                 return Response(serialized.errors, status = status.HTTP_400_BAD_REQUEST)      
-
-@csrf_exempt
-@api_view(['POST'])
-def google_login(request):
-    user_info = request.data.get('user')  # Expecting the Google token from the client
-    print( request.data)
-    if not user_info:
-        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
-    email = request.data.get('email')
-    id = request.data.get('id')
-    get_user=Webuser.objects.get(id=id)
-    try:
-        CartModel.objects.get(user_of_cart = get_user)
-    except:
-            try:
-                CartModel.objects.create(user_of_cart = get_user)
-            except:
-                return Response("cart is causing some issue")
-    get_user.created_by = get_user 
-
-    get_user.save()
-    response_data = get_token(get_user, email, id)
-    return Response(response_data, status = status.HTTP_200_OK)
         
 def get_token(user, username, id):
     refresh_and_access_token = RefreshToken.for_user(user)

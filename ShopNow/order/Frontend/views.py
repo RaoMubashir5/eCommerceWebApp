@@ -55,7 +55,7 @@ def single_orders_history(request, pk = None):
     context = { 
                 'orders': user_who_ordered,
                 'total_bill': total_bill,
-                'Items_details': items_details                         
+                'Items_details': items_details,                   
               }
     return render(request, 'orderedItems.html', context)
                     
